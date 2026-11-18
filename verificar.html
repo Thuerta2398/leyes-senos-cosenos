@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verificar comprobante · Leyes de Senos y Cosenos</title>
+<style>
+body{font-family:Calibri,"Segoe UI",system-ui,sans-serif;color:#1B2A41;margin:0;background:#F1F4F8}
+header{background:#1B2A41;color:#fff;padding:16px 22px}
+header .k{color:#F4A261;font-size:11px;letter-spacing:2px;font-weight:700}
+header h1{font-family:Cambria,Georgia,serif;margin:2px 0 0;font-size:22px}
+main{max-width:780px;margin:0 auto;padding:22px}
+.card{background:#fff;border-radius:12px;padding:18px 20px;margin-bottom:16px}
+label{display:block;font-weight:700;margin:10px 0 4px}
+input{width:100%;font-size:16px;padding:9px;border:2px solid #D6DEE8;border-radius:8px;box-sizing:border-box}
+button{background:#1B2A41;color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:700;font-size:16px;margin-top:14px;cursor:pointer}
+.ok{background:#E6F4EC;color:#2E8B57;font-weight:700;padding:12px;border-radius:10px}
+.bad{background:#FBE9E7;color:#C0392B;font-weight:700;padding:12px;border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{border-bottom:1px solid #D6DEE8;padding:6px 8px;text-align:left}
+th{background:#F1F4F8}
+.ex{font-size:14px;color:#34495E}
+</style>
+</head>
+<body>
+<header><div class="k">USO DOCENTE</div><h1>Verificar comprobante · Leyes de Senos y Cosenos</h1></header>
+<main>
+<div class="card">
+  <p class="ex" style="margin-top:0">Copia los datos tal como aparecen en el comprobante del alumno. Mayúsculas y acentos no importan en nombre y grupo.</p>
+  <label for="n">Nombre</label><input id="n">
+  <label for="g">Grupo</label><input id="g">
+  <label for="f">Fecha (dd/mm/aaaa hh:mm)</label><input id="f" placeholder="17/11/2026 19:30">
+  <label for="r">Resultado</label><input id="r" placeholder="6/7 · pistas 2 · soluciones 1">
+  <label for="c">Código de verificación</label><input id="c" placeholder="8 caracteres">
+  <button id="go">Verificar</button>
+  <div id="out" style="margin-top:14px"></div>
+</div>
+<div class="card" id="var" style="display:none"></div>
+</main>
+<script>
+/* ===== Generador de variantes (determinista por alumno) ===== */
+const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+const sinD = (d) => Math.sin(d * D2R), cosD = (d) => Math.cos(d * D2R), tanD = (d) => Math.tan(d * D2R);
+const asinD = (x) => Math.asin(x) * R2D, acosD = (x) => Math.acos(x) * R2D;
+
+function seedFrom(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+function makeRng(str) {
+  let a = seedFrom(str) % 4294967296;
+  const next = () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  return { int: (lo, hi) => lo + Math.floor(next() * (hi - lo + 1)), pick: (arr) => arr[Math.floor(next() * arr.length)] };
+}
+
+/* Triángulo completo a partir de b, c y α (LAL) */
+function triLAL_A(b, c, al) {
+  const a = Math.sqrt(b * b + c * c - 2 * b * c * cosD(al));
+  const be = acosD((a * a + c * c - b * b) / (2 * a * c));
+  return { a, b, c, al, be, ga: 180 - al - be };
+}
+
+function genRetos(seedStr) {
+  const R = makeRng(seedStr);
+  const retos = [];
+
+  // R1 · Senos, buscar un lado (AAL)
+  {
+    let al, be;
+    do { al = R.int(35, 65); be = R.int(40, 80); } while (al + be > 140 || Math.abs(al - be) < 6);
+    const a = R.int(10, 30), ga = 180 - al - be;
+    const b = (a * sinD(be)) / sinD(al), c = (a * sinD(ga)) / sinD(al);
+    retos.push({ id: "r1", ley: "senos", u: "m", d: { a, al, be }, tri: { a, b, c, al, be, ga },
+      known: ["a", "al", "be"], unknown: ["b"], ans: [{ k: "b", v: b, label: "b", u: "m" }] });
+  }
+  // R2 · Cosenos, buscar un lado (LAL)
+  {
+    const b = R.int(12, 30), c = R.int(15, 35);
+    let al; do { al = R.int(40, 110); } while (Math.abs(al - 90) < 3);
+    const t = triLAL_A(b, c, al);
+    retos.push({ id: "r2", ley: "cosenos", u: "m", d: { b, c, al }, tri: t,
+      known: ["b", "c", "al"], unknown: ["a"], ans: [{ k: "a", v: t.a, label: "a", u: "m" }] });
+  }
+  // R3 · Senos, buscar un ángulo (a > b: solución única)
+  {
+    const a = R.int(18, 30), b = R.int(10, a - 4), al = R.int(50, 80);
+    const be = asinD((b * sinD(al)) / a), ga = 180 - al - be, c = (a * sinD(ga)) / sinD(al);
+    retos.push({ id: "r3", ley: "senos", u: "m", d: { a, b, al }, tri: { a, b, c, al, be, ga },
+      known: ["a", "b", "al"], unknown: ["be"], ans: [{ k: "be", v: be, label: "β", u: "°" }] });
+  }
+  // R4 · Cosenos, buscar un ángulo (LLL)
+  {
+    let a, b, c, al;
+    do {
+      b = R.int(12, 25); c = R.int(14, 28); a = R.int(Math.abs(b - c) + 5, b + c - 5);
+      al = acosD((b * b + c * c - a * a) / (2 * b * c));
+    } while (al < 30 || al > 120 || Math.abs(al - 90) < 3);
+    const be = acosD((a * a + c * c - b * b) / (2 * a * c));
+    retos.push({ id: "r4", ley: "cosenos", u: "m", d: { a, b, c }, tri: { a, b, c, al, be, ga: 180 - al - be },
+      known: ["a", "b", "c"], unknown: ["al"], ans: [{ k: "al", v: al, label: "α", u: "°" }] });
+  }
+  // R5 · Caso ambiguo: b, c, β con c·sinβ < b < c  → dos valores de γ
+  {
+    let be, c, b, lo;
+    do {
+      be = R.int(35, 55); c = R.int(18, 26);
+      lo = Math.floor(c * sinD(be)) + 1;
+    } while (lo > c - 2);
+    b = R.int(lo, c - 1);
+    const g1 = asinD((c * sinD(be)) / b), g2 = 180 - g1;
+    const mk = (ga) => { const al = 180 - be - ga; return { a: (b * sinD(al)) / sinD(be), b, c, al, be, ga }; };
+    retos.push({ id: "r5", ley: "senos", u: "cm", d: { b, c, be }, tri: mk(g1), tri2: mk(g2),
+      known: ["b", "c", "be"], unknown: ["ga"],
+      ans: [{ k: "g1", v: g1, label: "γ₁ (agudo)", u: "°" }, { k: "g2", v: g2, label: "γ₂ (obtuso)", u: "°" }] });
+  }
+  // R6 · Triángulo completo: a, b, γ  (a < b, así α es agudo)
+  {
+    const a = R.int(8, 16), b = R.int(a + 3, a + 12);
+    let ga; do { ga = R.int(45, 100); } while (Math.abs(ga - 90) < 3);
+    const c = Math.sqrt(a * a + b * b - 2 * a * b * cosD(ga));
+    const al = asinD((a * sinD(ga)) / c), be = 180 - ga - al;
+    retos.push({ id: "r6", ley: "cosenos", u: "m", d: { a, b, ga }, tri: { a, b, c, al, be, ga },
+      known: ["a", "b", "ga"], unknown: ["c", "al", "be"],
+      ans: [{ k: "c", v: c, label: "c", u: "m" }, { k: "al", v: al, label: "α", u: "°" }, { k: "be", v: be, label: "β", u: "°" }] });
+  }
+  // R7 · Misión final: dos edificios, observador en el punto medio
+  {
+    const D = R.pick([60, 70, 80, 90, 100]);
+    let t1, t2; do { t1 = R.int(28, 42); t2 = R.int(46, 62); } while (Math.abs(t1 + t2 - 90) < 3);
+    const OA = D / 2 / cosD(t1), OB = D / 2 / cosD(t2), O = 180 - t1 - t2;
+    const d = Math.sqrt(OA * OA + OB * OB - 2 * OA * OB * cosD(O));
+    retos.push({ id: "r7", ley: "cosenos", u: "m", d: { D, t1, t2 }, geo: { OA, OB, O, d },
+      ans: [{ k: "OA", v: OA, label: "OA", u: "m" }, { k: "OB", v: OB, label: "OB", u: "m" }, { k: "O", v: O, label: "∠O", u: "°" }, { k: "d", v: d, label: "d", u: "m" }] });
+  }
+  return retos;
+}
+
+if (typeof module !== "undefined") module.exports = { genRetos, sinD, cosD, tanD, asinD, acosD };
+
+const SALT = "XOCH-M5-LSC-2026";
+const norm = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim().toUpperCase();
+const codeFor = (p) => seedFrom(p + "#" + SALT).toString(36).toUpperCase().padStart(8, "0").slice(-8);
+const f2 = (x) => (Math.round(x * 100) / 100).toFixed(2);
+const NOMBRES = ["El dron", "El atajo del parque", "La armadura del techo", "El terreno", "Dos respuestas (caso ambiguo)", "La vela del barco", "Los dos edificios"];
+const SYM = { a: "a", b: "b", c: "c", al: "α", be: "β", ga: "γ", D: "D", t1: "θ₁", t2: "θ₂" };
+document.getElementById("go").onclick = () => {
+  const v = (id) => document.getElementById(id).value;
+  const res = v("r").trim().replace(/\s+/g, " ").replace(/\s*·\s*/g, " · ");
+  const payload = `${norm(v("n"))}|${norm(v("g"))}|${v("f").trim()}|${res}`;
+  const ok = codeFor(payload) === v("c").trim().toUpperCase();
+  document.getElementById("out").innerHTML = ok
+    ? `<div class="ok">✔ El código coincide: el comprobante no fue modificado.</div>`
+    : `<div class="bad">✖ El código no coincide. Revisa que hayas copiado exactamente fecha y resultado; si todo es igual, el comprobante fue alterado.</div>`;
+  const R = genRetos(norm(v("n")) + "|" + norm(v("g")));
+  const box = document.getElementById("var"); box.style.display = "block";
+  box.innerHTML = `<h3 style="margin-top:0">Variante del alumno (clave ${codeFor(norm(v("n")) + "|" + norm(v("g"))).slice(0, 4)})</h3>
+  <p class="ex">Datos y respuestas que le tocaron, para revisar su procedimiento escrito.</p>
+  <table><tr><th>Reto</th><th>Datos</th><th>Respuestas</th></tr>${R.map((r, i) =>
+    `<tr><td>${i + 1}. ${NOMBRES[i]}</td><td>${Object.entries(r.d).map(([k, x]) => `${SYM[k]} = ${x}${["al", "be", "ga", "t1", "t2"].includes(k) ? "°" : " " + r.u}`).join(", ")}</td><td>${r.ans.map((a) => `${a.label} ≈ ${f2(a.v)} ${a.u}`).join("<br>")}</td></tr>`).join("")}</table>`;
+};
+</script>
+</body>
+</html>

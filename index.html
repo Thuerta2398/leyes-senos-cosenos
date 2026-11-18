@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leyes de Senos y Cosenos · Autoestudio · Matemáticas V</title>
+<style>:root{
+  --navy:#1B2A41; --dk2:#34495E; --bg2:#F1F4F8; --line:#D6DEE8;
+  --blue:#3B82C4; --teal:#2A9D8F; --coral:#E76F51; --green:#2E8B57; --red:#C0392B; --orange:#F4A261;
+  --green-t:#E6F4EC; --orange-t:#FDF0E4; --red-t:#FBE9E7; --gray:#8795A6;
+  --serif: Cambria, "Cambria Math", Georgia, "Times New Roman", serif;
+  --sans: Calibri, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--navy);font-family:var(--sans);font-size:17px;line-height:1.45}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+.c-a{color:var(--blue)} .c-b{color:var(--teal)} .c-c{color:var(--coral)} .c-g{color:var(--gray)}
+header.top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;padding:10px 18px}
+.top-row{display:flex;align-items:center;gap:14px;max-width:1040px;margin:0 auto}
+.top-row h1{font-family:var(--serif);font-size:20px;margin:0;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kicker{color:var(--orange);font-size:11px;letter-spacing:2px;font-weight:700}
+.btn-calc{background:var(--orange);color:var(--navy);border:0;border-radius:999px;padding:8px 16px;font-weight:700;display:flex;gap:8px;align-items:center}
+nav.prog{max-width:1040px;margin:10px auto 0;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+nav.prog button{width:34px;height:34px;border-radius:50%;border:2px solid #4A5D78;background:transparent;color:#C9D3E0;font-weight:700;font-size:14px;position:relative;padding:0}
+nav.prog button.cur{background:#fff;color:var(--navy);border-color:#fff;transform:scale(1.08)}
+nav.prog button.done{background:var(--green);border-color:var(--green);color:#fff}
+nav.prog button.help{background:var(--orange);border-color:var(--orange);color:var(--navy)}
+nav.prog button:disabled{opacity:.4;cursor:not-allowed}
+nav.prog .sep{flex:0 0 8px;height:2px;background:#4A5D78}
+.bar{max-width:1040px;margin:8px auto 0;height:6px;background:#2C3E57;border-radius:6px;overflow:hidden}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--teal),var(--green));width:0;transition:width .5s}
+main{max-width:1040px;margin:0 auto;padding:22px 18px 120px}
+h2.st{font-family:var(--serif);font-size:30px;margin:4px 0 6px}
+.lead{color:var(--dk2);margin:0 0 18px;font-size:17px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:22px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}h2.st{font-size:25px}}
+.card{background:var(--bg2);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.card.ok{background:var(--green-t)} .card.warn{background:var(--orange-t)} .card.bad{background:var(--red-t)}
+.card h3{margin:0 0 8px;font-size:17px;display:flex;align-items:center;gap:10px}
+.num{flex:0 0 30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.card.ok .num{background:var(--green)}
+.locked{opacity:.45;pointer-events:none;filter:grayscale(.4)}
+.fig{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
+.fig svg{width:100%;height:auto;display:block}
+.story{font-size:17px}
+.eqs{font-family:var(--serif);font-size:19px}
+.btn{border:0;border-radius:10px;padding:10px 18px;font-weight:700;background:var(--navy);color:#fff;transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn.sec{background:#fff;color:var(--navy);border:2px solid var(--line)}
+.btn.or{background:var(--orange);color:var(--navy)}
+.btn.gr{background:var(--green)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.choice{border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 18px;font-weight:700;font-size:17px;min-width:120px}
+.choice:hover{border-color:var(--blue)}
+.choice.right{border-color:var(--green);background:var(--green-t);color:var(--green)}
+.choice.wrong{border-color:var(--red);background:var(--red-t);color:var(--red);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes pop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.fb{margin-top:10px;font-weight:600;min-height:1.2em}
+.fb.ok{color:var(--green)} .fb.bad{color:var(--red)} .fb.info{color:var(--dk2)}
+/* formula builder */
+.formula{font-family:var(--serif);font-size:20px;line-height:2.4;background:#fff;border-radius:10px;padding:8px 12px;border:1px solid var(--line)}
+.slot{display:inline-flex;min-width:54px;height:38px;border:2px dashed var(--gray);border-radius:8px;vertical-align:middle;align-items:center;justify-content:center;padding:0 8px;margin:0 2px;background:#FAFBFD;font-weight:700;cursor:pointer}
+.slot.hover,.slot.sel-target{border-color:var(--orange);background:var(--orange-t)}
+.slot.filled{border-style:solid;background:#fff}
+.slot.right{border-color:var(--green);background:var(--green-t)}
+.slot.wrong{border-color:var(--red);background:var(--red-t);animation:shake .35s}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.chip{font-family:var(--serif);font-weight:700;font-size:18px;padding:8px 14px;border-radius:999px;background:#fff;border:2px solid currentColor;touch-action:none;user-select:none;cursor:grab}
+.chip.sel{box-shadow:0 0 0 4px var(--orange)}
+.drag-ghost{position:fixed;z-index:999;pointer-events:none;transform:translate(-50%,-50%) scale(1.08);box-shadow:0 8px 20px rgba(0,0,0,.2)}
+/* answers */
+.ans{display:grid;grid-template-columns:auto 1fr auto;gap:8px 10px;align-items:center;max-width:420px}
+.ans label{font-family:var(--serif);font-weight:700;font-size:19px}
+.ans input{font-size:18px;padding:8px 10px;border:2px solid var(--line);border-radius:8px;width:100%;font-family:var(--serif)}
+.ans input:focus{outline:none;border-color:var(--blue)}
+.ans input.right{border-color:var(--green);background:var(--green-t)}
+.ans input.wrong{border-color:var(--red);background:var(--red-t)}
+.hint{background:#fff;border-left:0;border-radius:10px;padding:10px 12px;margin-top:10px;font-size:16px}
+.hint b{color:#9A4A12}
+.ex{font-size:14px;color:var(--dk2);margin:6px 0 10px}
+.summary{font-size:15px;color:var(--green);font-weight:700}
+/* clasificador */
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.bin{border:3px dashed var(--line);border-radius:14px;min-height:170px;padding:10px;background:#fff}
+.bin h4{margin:0 0 8px;font-size:18px;text-align:center}
+.bin.hover,.bin.sel-target{border-color:var(--orange);background:var(--orange-t)}
+.bin .tcard{cursor:default}
+.tcards{display:flex;flex-wrap:wrap;gap:10px}
+.tcard{background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 12px;font-size:16px;touch-action:none;user-select:none;cursor:grab;max-width:300px}
+.tcard.sel{box-shadow:0 0 0 4px var(--orange)}
+.tcard.right{border-color:var(--green);background:var(--green-t)}
+/* repaso */
+.tri-hit{cursor:pointer}
+.tri-hit:hover{opacity:.85}
+.q{font-size:19px;font-weight:700}
+/* toast */
+.toast{position:fixed;left:50%;top:110px;transform:translateX(-50%);background:var(--green);color:#fff;padding:14px 26px;border-radius:999px;font-weight:700;font-size:19px;z-index:60;animation:pop .4s;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+/* calculator */
+#calc{position:fixed;right:18px;bottom:18px;width:300px;background:var(--navy);border-radius:16px;padding:10px;z-index:50;box-shadow:0 14px 40px rgba(0,0,0,.35);display:none;touch-action:none}
+#calc.open{display:block;animation:pop .25s}
+#calc .hd{display:flex;justify-content:space-between;align-items:center;color:#fff;font-weight:700;padding:2px 4px 8px;cursor:move}
+#calc .hd span.deg{background:var(--orange);color:var(--navy);border-radius:6px;padding:1px 6px;font-size:12px;margin-left:6px}
+#calc .hd button{background:transparent;border:0;color:#fff;font-size:20px}
+#calc .scr{background:#F4F7FB;border-radius:10px;padding:8px 10px;text-align:right;font-family:var(--serif);min-height:64px}
+#calc .scr .ex{font-size:15px;color:var(--dk2);margin:0;word-break:break-all;min-height:20px}
+#calc .scr .res{font-size:24px;font-weight:700;color:var(--navy);word-break:break-all}
+#calc .keys{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+#calc .keys button{border:0;border-radius:8px;padding:9px 0;background:#2C3E57;color:#fff;font-size:15px;font-weight:600}
+#calc .keys button.fn{background:#3E5574}
+#calc .keys button.op{background:#4A6587}
+#calc .keys button.eq{background:var(--orange);color:var(--navy)}
+#calc .keys button.cl{background:var(--red)}
+#calc .use{margin-top:8px;width:100%;background:var(--teal);color:#fff;border:0;border-radius:8px;padding:9px;font-weight:700}
+/* registro / comprobante */
+.form{max-width:520px}
+.form label{display:block;font-weight:700;margin:12px 0 4px}
+.form input,.form select{width:100%;font-size:17px;padding:10px;border:2px solid var(--line);border-radius:10px}
+#cert{background:#fff;border:2px solid var(--navy);border-radius:14px;padding:26px 30px;max-width:760px}
+#cert h3{font-family:var(--serif);font-size:24px;margin:0}
+#cert table{width:100%;border-collapse:collapse;margin:14px 0;font-size:15px}
+#cert th,#cert td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}
+#cert th{background:var(--bg2)}
+.code{font-family:"Courier New",monospace;font-size:22px;font-weight:700;letter-spacing:3px;background:var(--bg2);padding:6px 12px;border-radius:8px;display:inline-block}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.badge{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:#C9D3E0}
+.badge.done{background:var(--green)} .badge.help{background:var(--orange);color:var(--navy)}
+footer.bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 18px;z-index:15}
+footer.bottom .row{max-width:1040px;margin:0 auto;justify-content:space-between}
+@media print{
+  header.top,footer.bottom,#calc,.noprint,nav{display:none!important}
+  main{padding:0}
+  #cert{border:2px solid #000}
+  body{font-size:13px}
+}
+
+@media (max-width:600px){
+  header.top{padding:8px 10px}
+  .top-row .kicker{display:none}
+  .top-row h1{font-size:16px}
+  .btn-calc{padding:6px 12px;font-size:15px}
+  .btn-calc .lbl{display:none}
+  nav.prog{gap:3px;margin-top:6px}
+  nav.prog button{width:26px;height:26px;font-size:12px;border-width:1.5px}
+  nav.prog .sep{flex-basis:3px}
+  main{padding:14px 12px 110px}
+  #calc{right:8px;left:8px;width:auto;bottom:70px}
+  .formula{font-size:17px}
+  .slot{min-width:46px;height:34px}
+  footer.bottom .btn{padding:8px 12px}
+  #where{font-size:12px!important}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-row">
+    <div style="flex:1;min-width:0"><div class="kicker">MATEMÁTICAS V · AUTOESTUDIO</div><h1>Leyes de Senos y Cosenos</h1></div>
+    <button class="btn-calc" id="calcBtn" aria-label="Abrir calculadora">🧮 <span class="lbl">Calculadora</span></button>
+  </div>
+  <nav class="prog" id="nav" aria-label="Estaciones"></nav>
+  <div class="bar"><div id="barfill"></div></div>
+</header>
+<main id="main"></main>
+<footer class="bottom"><div class="row">
+  <button class="btn sec" id="prev">← Anterior</button>
+  <span id="where" style="color:#34495E;font-size:15px"></span>
+  <button class="btn" id="next">Siguiente →</button>
+</div></footer>
+<div id="calc" role="dialog" aria-label="Calculadora">
+  <div class="hd"><div>Calculadora <span class="deg">DEG</span></div><button aria-label="Cerrar">×</button></div>
+  <div class="scr"><p class="ex"></p><div class="res">0</div></div>
+  <div class="keys"></div>
+  <button class="use">Usar resultado en la casilla</button>
+</div>
+<script>/* ===== Generador de variantes (determinista por alumno) ===== */
+const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+const sinD = (d) => Math.sin(d * D2R), cosD = (d) => Math.cos(d * D2R), tanD = (d) => Math.tan(d * D2R);
+const asinD = (x) => Math.asin(x) * R2D, acosD = (x) => Math.acos(x) * R2D;
+
+function seedFrom(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+function makeRng(str) {
+  let a = seedFrom(str) % 4294967296;
+  const next = () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  return { int: (lo, hi) => lo + Math.floor(next() * (hi - lo + 1)), pick: (arr) => arr[Math.floor(next() * arr.length)] };
+}
+
+/* Triángulo completo a partir de b, c y α (LAL) */
+function triLAL_A(b, c, al) {
+  const a = Math.sqrt(b * b + c * c - 2 * b * c * cosD(al));
+  const be = acosD((a * a + c * c - b * b) / (2 * a * c));
+  return { a, b, c, al, be, ga: 180 - al - be };
+}
+
+function genRetos(seedStr) {
+  const R = makeRng(seedStr);
+  const retos = [];
+
+  // R1 · Senos, buscar un lado (AAL)
+  {
+    let al, be;
+    do { al = R.int(35, 65); be = R.int(40, 80); } while (al + be > 140 || Math.abs(al - be) < 6);
+    const a = R.int(10, 30), ga = 180 - al - be;
+    const b = (a * sinD(be)) / sinD(al), c = (a * sinD(ga)) / sinD(al);
+    retos.push({ id: "r1", ley: "senos", u: "m", d: { a, al, be }, tri: { a, b, c, al, be, ga },
+      known: ["a", "al", "be"], unknown: ["b"], ans: [{ k: "b", v: b, label: "b", u: "m" }] });
+  }
+  // R2 · Cosenos, buscar un lado (LAL)
+  {
+    const b = R.int(12, 30), c = R.int(15, 35);
+    let al; do { al = R.int(40, 110); } while (Math.abs(al - 90) < 3);
+    const t = triLAL_A(b, c, al);
+    retos.push({ id: "r2", ley: "cosenos", u: "m", d: { b, c, al }, tri: t,
+      known: ["b", "c", "al"], unknown: ["a"], ans: [{ k: "a", v: t.a, label: "a", u: "m" }] });
+  }
+  // R3 · Senos, buscar un ángulo (a > b: solución única)
+  {
+    const a = R.int(18, 30), b = R.int(10, a - 4), al = R.int(50, 80);
+    const be = asinD((b * sinD(al)) / a), ga = 180 - al - be, c = (a * sinD(ga)) / sinD(al);
+    retos.push({ id: "r3", ley: "senos", u: "m", d: { a, b, al }, tri: { a, b, c, al, be, ga },
+      known: ["a", "b", "al"], unknown: ["be"], ans: [{ k: "be", v: be, label: "β", u: "°" }] });
+  }
+  // R4 · Cosenos, buscar un ángulo (LLL)
+  {
+    let a, b, c, al;
+    do {
+      b = R.int(12, 25); c = R.int(14, 28); a = R.int(Math.abs(b - c) + 5, b + c - 5);
+      al = acosD((b * b + c * c - a * a) / (2 * b * c));
+    } while (al < 30 || al > 120 || Math.abs(al - 90) < 3);
+    const be = acosD((a * a + c * c - b * b) / (2 * a * c));
+    retos.push({ id: "r4", ley: "cosenos", u: "m", d: { a, b, c }, tri: { a, b, c, al, be, ga: 180 - al - be },
+      known: ["a", "b", "c"], unknown: ["al"], ans: [{ k: "al", v: al, label: "α", u: "°" }] });
+  }
+  // R5 · Caso ambiguo: b, c, β con c·sinβ < b < c  → dos valores de γ
+  {
+    let be, c, b, lo;
+    do {
+      be = R.int(35, 55); c = R.int(18, 26);
+      lo = Math.floor(c * sinD(be)) + 1;
+    } while (lo > c - 2);
+    b = R.int(lo, c - 1);
+    const g1 = asinD((c * sinD(be)) / b), g2 = 180 - g1;
+    const mk = (ga) => { const al = 180 - be - ga; return { a: (b * sinD(al)) / sinD(be), b, c, al, be, ga }; };
+    retos.push({ id: "r5", ley: "senos", u: "cm", d: { b, c, be }, tri: mk(g1), tri2: mk(g2),
+      known: ["b", "c", "be"], unknown: ["ga"],
+      ans: [{ k: "g1", v: g1, label: "γ₁ (agudo)", u: "°" }, { k: "g2", v: g2, label: "γ₂ (obtuso)", u: "°" }] });
+  }
+  // R6 · Triángulo completo: a, b, γ  (a < b, así α es agudo)
+  {
+    const a = R.int(8, 16), b = R.int(a + 3, a + 12);
+    let ga; do { ga = R.int(45, 100); } while (Math.abs(ga - 90) < 3);
+    const c = Math.sqrt(a * a + b * b - 2 * a * b * cosD(ga));
+    const al = asinD((a * sinD(ga)) / c), be = 180 - ga - al;
+    retos.push({ id: "r6", ley: "cosenos", u: "m", d: { a, b, ga }, tri: { a, b, c, al, be, ga },
+      known: ["a", "b", "ga"], unknown: ["c", "al", "be"],
+      ans: [{ k: "c", v: c, label: "c", u: "m" }, { k: "al", v: al, label: "α", u: "°" }, { k: "be", v: be, label: "β", u: "°" }] });
+  }
+  // R7 · Misión final: dos edificios, observador en el punto medio
+  {
+    const D = R.pick([60, 70, 80, 90, 100]);
+    let t1, t2; do { t1 = R.int(28, 42); t2 = R.int(46, 62); } while (Math.abs(t1 + t2 - 90) < 3);
+    const OA = D / 2 / cosD(t1), OB = D / 2 / cosD(t2), O = 180 - t1 - t2;
+    const d = Math.sqrt(OA * OA + OB * OB - 2 * OA * OB * cosD(O));
+    retos.push({ id: "r7", ley: "cosenos", u: "m", d: { D, t1, t2 }, geo: { OA, OB, O, d },
+      ans: [{ k: "OA", v: OA, label: "OA", u: "m" }, { k: "OB", v: OB, label: "OB", u: "m" }, { k: "O", v: O, label: "∠O", u: "°" }, { k: "d", v: d, label: "d", u: "m" }] });
+  }
+  return retos;
+}
+
+if (typeof module !== "undefined") module.exports = { genRetos, sinD, cosD, tanD, asinD, acosD };
+
+/* ===== Calculadora científica (modo grados) ===== */
+const Calc = (() => {
+  let expr = "", ans = 0, lastRes = null, lastInput = null;
+  const FN = { "sin(": (x) => sinD(x), "cos(": (x) => cosD(x), "tan(": (x) => tanD(x),
+    "sin⁻¹(": (x) => asinD(x), "cos⁻¹(": (x) => acosD(x), "tan⁻¹(": (x) => Math.atan(x) * R2D, "√(": (x) => Math.sqrt(x) };
+  const FN_KEYS = Object.keys(FN).sort((a, b) => b.length - a.length);
+
+  function tokenize(s) {
+    const t = []; let i = 0;
+    while (i < s.length) {
+      const ch = s[i];
+      if (ch === " ") { i++; continue; }
+      const f = FN_KEYS.find((k) => s.startsWith(k, i));
+      if (f) { t.push({ k: "fn", v: f }); i += f.length; continue; }
+      if (s.startsWith("Ans", i)) { t.push({ k: "num", v: ans }); i += 3; continue; }
+      if (ch === "π") { t.push({ k: "num", v: Math.PI }); i++; continue; }
+      if (/[0-9.]/.test(ch)) { let j = i; while (j < s.length && /[0-9.]/.test(s[j])) j++; const v = parseFloat(s.slice(i, j)); if (isNaN(v)) throw 0; t.push({ k: "num", v }); i = j; continue; }
+      if ("+−-×÷*/^()²".includes(ch)) { t.push({ k: "op", v: ch }); i++; continue; }
+      throw 0;
+    }
+    return t;
+  }
+  function evaluate(s) {
+    const t = tokenize(s); let p = 0;
+    const peek = () => t[p], take = () => t[p++];
+    const startsPrimary = (x) => x && (x.k === "num" || x.k === "fn" || (x.k === "op" && x.v === "("));
+    function expression() {
+      let v = term();
+      while (peek() && peek().k === "op" && "+−-".includes(peek().v)) { const o = take().v; const r = term(); v = o === "+" ? v + r : v - r; }
+      return v;
+    }
+    function term() {
+      let v = power();
+      for (;;) {
+        const x = peek();
+        if (x && x.k === "op" && "×÷*/".includes(x.v)) { take(); const r = power(); v = "×*".includes(x.v) ? v * r : v / r; }
+        else if (startsPrimary(x)) { v = v * power(); }
+        else break;
+      }
+      return v;
+    }
+    function power() { let b = unary(); if (peek() && peek().v === "^") { take(); return Math.pow(b, power()); } return b; }
+    function unary() { const x = peek(); if (x && x.k === "op" && "−-".includes(x.v)) { take(); return -unary(); } return postfix(); }
+    function postfix() { let v = primary(); while (peek() && peek().v === "²") { take(); v = v * v; } return v; }
+    function primary() {
+      const x = take(); if (!x) throw 0;
+      if (x.k === "num") return x.v;
+      if (x.k === "fn") { const v = expression(); if (peek() && peek().v === ")") take(); return FN[x.v](v); }
+      if (x.v === "(") { const v = expression(); if (peek() && peek().v === ")") take(); return v; }
+      throw 0;
+    }
+    const v = expression();
+    if (p < t.length) throw 0;
+    if (!isFinite(v)) throw 0;
+    return v;
+  }
+  const fmt = (v) => { const r = Math.round(v * 1e8) / 1e8; return String(r); };
+
+  function render() {
+    document.querySelector("#calc .scr .ex").textContent = expr || " ";
+    document.querySelector("#calc .scr .res").textContent = lastRes === null ? "0" : lastRes;
+  }
+  function press(k) {
+    if (k === "C") { expr = ""; lastRes = null; }
+    else if (k === "⌫") { const f = FN_KEYS.find((x) => expr.endsWith(x)); expr = f ? expr.slice(0, -f.length) : expr.endsWith("Ans") ? expr.slice(0, -3) : expr.slice(0, -1); }
+    else if (k === "=") {
+      try { const v = evaluate(expr); ans = v; lastRes = fmt(v); expr = expr; } catch (e) { lastRes = "Error"; }
+    } else {
+      if (lastRes !== null && lastRes !== "Error" && expr && /^[+−×÷^²]/.test(k) && Calc._justEq) { expr = "Ans"; }
+      else if (Calc._justEq && !/^[+−×÷^²)]/.test(k)) { expr = ""; }
+      expr += k;
+    }
+    Calc._justEq = k === "=";
+    render();
+  }
+  function init() {
+    const el = document.getElementById("calc");
+    const rows = [
+      ["sin(", "cos(", "tan(", "C", "⌫"],
+      ["sin⁻¹(", "cos⁻¹(", "tan⁻¹(", "(", ")"],
+      ["7", "8", "9", "÷", "√("],
+      ["4", "5", "6", "×", "²"],
+      ["1", "2", "3", "−", "^"],
+      ["0", ".", "π", "+", "Ans"],
+    ];
+    const keys = el.querySelector(".keys");
+    rows.flat().forEach((k) => {
+      const b = document.createElement("button");
+      b.textContent = k.length > 1 && k.endsWith("(") ? k.slice(0, -1) : k;
+      b.className = /[a-z√]/.test(k) || k === "Ans" || k === "π" ? "fn" : "÷×−+^²()".includes(k) ? "op" : k === "C" || k === "⌫" ? "cl" : "";
+      b.setAttribute("aria-label", k);
+      b.onclick = () => press(k);
+      keys.appendChild(b);
+    });
+    const eq = document.createElement("button"); eq.textContent = "="; eq.className = "eq"; eq.style.gridColumn = "span 5"; eq.onclick = () => press("="); keys.appendChild(eq);
+    el.querySelector(".use").onclick = () => {
+      if (lastRes === null || lastRes === "Error") return;
+      const target = lastInput && document.body.contains(lastInput) ? lastInput : null;
+      if (target) { target.value = (Math.round(parseFloat(lastRes) * 100) / 100).toFixed(2); target.dispatchEvent(new Event("input")); target.focus(); }
+      else App.toast("Primero toca la casilla de respuesta", true);
+    };
+    el.querySelector(".hd button").onclick = () => el.classList.remove("open");
+    // arrastrar calculadora
+    const hd = el.querySelector(".hd"); let sx, sy, ox, oy, drag = false;
+    hd.addEventListener("pointerdown", (e) => { if (e.target.tagName === "BUTTON") return; drag = true; sx = e.clientX; sy = e.clientY; const r = el.getBoundingClientRect(); ox = r.left; oy = r.top; hd.setPointerCapture(e.pointerId); });
+    hd.addEventListener("pointermove", (e) => { if (!drag) return; el.style.left = Math.max(0, ox + e.clientX - sx) + "px"; el.style.top = Math.max(0, oy + e.clientY - sy) + "px"; el.style.right = "auto"; el.style.bottom = "auto"; });
+    hd.addEventListener("pointerup", () => (drag = false));
+    document.addEventListener("focusin", (e) => { if (e.target.matches("input.answer")) lastInput = e.target; });
+    render();
+  }
+  return { init, evaluate, press, toggle: () => document.getElementById("calc").classList.toggle("open"), _justEq: false };
+})();
+
+/* ===== Interactivo: Leyes de Senos y Cosenos ===== */
+const SALT = "XOCH-M5-LSC-2026";
+const KEY = "lsc5_estado_v1";
+const SYM = { a: "a", b: "b", c: "c", al: "α", be: "β", ga: "γ", D: "D", t1: "θ₁", t2: "θ₂", OA: "OA", OB: "OB", O: "∠O" };
+const COL = { a: "c-a", al: "c-a", b: "c-b", be: "c-b", c: "c-c", ga: "c-c", OA: "c-a", OB: "c-b", O: "c-c", D: "c-g", t1: "c-a", t2: "c-b" };
+const HEX = { "c-a": "#3B82C4", "c-b": "#2A9D8F", "c-c": "#E76F51", "c-g": "#8795A6" };
+const isAng = (k) => ["al", "be", "ga", "t1", "t2", "O"].includes(k);
+const f2 = (x) => (Math.round(x * 100) / 100).toFixed(2);
+const f4 = (x) => (Math.round(x * 10000) / 10000).toFixed(4);
+const norm = (s) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim().toUpperCase();
+const codeFor = (payload) => seedFrom(payload + "#" + SALT).toString(36).toUpperCase().padStart(8, "0").slice(-8);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+const STATIONS = [
+  { id: "registro", t: "Registro" }, { id: "repaso", t: "Repaso" }, { id: "clasif", t: "¿Senos o cosenos?" },
+  { id: "r1", t: "Reto 1" }, { id: "r2", t: "Reto 2" }, { id: "r3", t: "Reto 3" }, { id: "r4", t: "Reto 4" },
+  { id: "r5", t: "Reto 5" }, { id: "r6", t: "Reto 6" }, { id: "r7", t: "Reto 7" }, { id: "fin", t: "Comprobante" },
+];
+const RETO_INFO = {
+  r1: { t: "El dron", ley: "Ley de Senos · buscar un lado" },
+  r2: { t: "El atajo del parque", ley: "Ley de Cosenos · buscar un lado" },
+  r3: { t: "La armadura del techo", ley: "Ley de Senos · buscar un ángulo" },
+  r4: { t: "El terreno", ley: "Ley de Cosenos · buscar un ángulo" },
+  r5: { t: "¡Cuidado! Dos respuestas", ley: "El caso ambiguo" },
+  r6: { t: "La vela del barco", ley: "Triángulo completo" },
+  r7: { t: "Misión final: los dos edificios", ley: "Problema aplicado" },
+};
+
+let S = null; // estado
+let RETOS = null;
+function fresh() {
+  return { nombre: "", grupo: "", st: 0, repaso: { q: 0, done: false }, clasif: { placed: {}, done: false },
+    r: {}, cert: null };
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function load() { try { const x = JSON.parse(localStorage.getItem(KEY)); if (x && x.r) return x; } catch (e) {} return null; }
+function rs(id) { if (!S.r[id]) S.r[id] = { step: 1, law: false, formula: false, solved: false, attempts: 0, hints: 0, revealed: false, vals: {} }; return S.r[id]; }
+
+const App = {
+  toast(msg, warn) {
+    const t = document.createElement("div"); t.className = "toast"; if (warn) t.style.background = "#C0392B";
+    t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 1800);
+  },
+};
+
+/* ---------------- Figuras SVG ---------------- */
+function svgTri(t, opt) {
+  opt = opt || {};
+  const known = new Set(opt.known || []), unk = new Set(opt.unknown || []), u = opt.u || "m";
+  const W = 420, H = 300, P = 58;
+  const pts = { A: [0, 0], B: [t.c, 0], C: [t.b * cosD(t.al), t.b * sinD(t.al)] };
+  const xs = Object.values(pts).map((p) => p[0]), ys = Object.values(pts).map((p) => p[1]);
+  const minx = Math.min(...xs), maxx = Math.max(...xs), maxy = Math.max(...ys);
+  const sc = Math.min((W - 2 * P) / (maxx - minx), (H - 2 * P) / maxy);
+  const ox = ((W - 2 * P) - (maxx - minx) * sc) / 2, oy = ((H - 2 * P) - maxy * sc) / 2;
+  const X = (p) => [P + ox + (p[0] - minx) * sc, H - P - oy - p[1] * sc];
+  const A = X(pts.A), B = X(pts.B), C = X(pts.C);
+  const cen = [(A[0] + B[0] + C[0]) / 3, (A[1] + B[1] + C[1]) / 3];
+  let s = "";
+  const ang = (V, P1, P2, key) => {
+    const cls = COL[key], col = HEX[cls];
+    const a1 = Math.atan2(P1[1] - V[1], P1[0] - V[0]), a2 = Math.atan2(P2[1] - V[1], P2[0] - V[0]);
+    let d = a2 - a1; while (d <= -Math.PI) d += 2 * Math.PI; while (d > Math.PI) d -= 2 * Math.PI;
+    const r = opt.hit ? 40 : 30, sx = V[0] + r * Math.cos(a1), sy = V[1] + r * Math.sin(a1), ex = V[0] + r * Math.cos(a1 + d), ey = V[1] + r * Math.sin(a1 + d);
+    const show = known.has(key) || unk.has(key) || opt.allAngles;
+    const fillc = unk.has(key) ? "#C9D3E0" : col;
+    if (show) s += `<path d="M${V[0]},${V[1]} L${sx},${sy} A${r},${r} 0 0 ${d > 0 ? 1 : 0} ${ex},${ey} Z" fill="${fillc}" opacity=".55" class="${opt.hit ? "tri-hit" : ""}" data-k="${key}"/>`;
+    const m = a1 + d / 2, lr = Math.min(115, Math.max(52, (known.has(key) ? 34 : 24) / Math.sin(Math.abs(d) / 2)));
+    let lab = SYM[key];
+    if (known.has(key)) lab += ` = ${opt.vals && opt.vals[key] != null ? opt.vals[key] : Math.round(t[key])}°`;
+    else if (unk.has(key)) lab += " = ?";
+    if (show || opt.labels) s += `<text x="${V[0] + lr * Math.cos(m)}" y="${V[1] + lr * Math.sin(m) + 6}" text-anchor="middle" font-family="Cambria,Georgia,serif" font-style="italic" font-weight="700" font-size="17" fill="${unk.has(key) ? "#8795A6" : col}">${lab}</text>`;
+  };
+  const side = (P1, P2, key) => {
+    const cls = COL[key], col = HEX[cls], dash = unk.has(key) ? 'stroke-dasharray="9 7"' : "";
+    s += `<line x1="${P1[0]}" y1="${P1[1]}" x2="${P2[0]}" y2="${P2[1]}" stroke="${unk.has(key) ? "#AAB6C4" : col}" stroke-width="6" stroke-linecap="round" ${dash}/>`;
+    if (opt.hit) s += `<line x1="${P1[0]}" y1="${P1[1]}" x2="${P2[0]}" y2="${P2[1]}" stroke="transparent" stroke-width="26" class="tri-hit" data-k="${key}"/>`;
+    const M = [(P1[0] + P2[0]) / 2, (P1[1] + P2[1]) / 2];
+    let n = [-(P2[1] - P1[1]), P2[0] - P1[0]]; const L = Math.hypot(...n); n = [n[0] / L, n[1] / L];
+    if ((M[0] - cen[0]) * n[0] + (M[1] - cen[1]) * n[1] < 0) n = [-n[0], -n[1]];
+    let lab = SYM[key];
+    if (known.has(key)) lab += ` = ${t[key] % 1 === 0 ? t[key] : f2(t[key])} ${u}`;
+    else if (unk.has(key)) lab += " = ?";
+    const off = 24 + (lab.length > 3 ? Math.abs(n[0]) * lab.length * 3.6 : 0);
+    s += `<text x="${M[0] + n[0] * off}" y="${M[1] + n[1] * off + 6}" text-anchor="middle" font-family="Cambria,Georgia,serif" font-style="italic" font-size="18" fill="${unk.has(key) ? "#8795A6" : col}">${lab}</text>`;
+  };
+  let angS, sideS;
+  s = ""; ang(A, B, C, "al"); ang(B, A, C, "be"); ang(C, A, B, "ga"); angS = s;
+  s = ""; side(B, C, "a"); side(A, C, "b"); side(A, B, "c"); sideS = s;
+  s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Triángulo"><polygon points="${A} ${B} ${C}" fill="#EEF2F7"/>` + (opt.hit ? sideS + angS : angS + sideS);
+  const vl = (V, txt) => { const d = [V[0] - cen[0], V[1] - cen[1]], L = Math.hypot(...d); s += `<text x="${V[0] + (d[0] / L) * 18}" y="${V[1] + (d[1] / L) * 18 + 5}" text-anchor="middle" font-family="Calibri,Segoe UI,sans-serif" font-weight="700" font-size="15" fill="#1B2A41">${txt}</text>`; };
+  vl(A, "A"); vl(B, "B"); vl(C, "C");
+  return s + "</svg>";
+}
+
+function svgAmbig(r, showBoth) {
+  const { b, c, be } = r.d, W = 440, H = 280, P = 40, PL = 90;
+  const t1 = r.tri.a, t2 = r.tri2.a; // distancias BC1 (menor ángulo γ agudo → BC mayor)
+  const far = Math.max(t1, t2) * 1.08;
+  const pts = [[0, 0], [c, 0], [far * cosD(be), far * sinD(be)]];
+  const maxx = Math.max(...pts.map((p) => p[0])), maxy = Math.max(...pts.map((p) => p[1]));
+  const sc = Math.min((W - P - PL) / maxx, (H - 2 * P) / maxy);
+  const X = (p) => [PL + p[0] * sc, H - P - p[1] * sc];
+  const B = X([0, 0]), A = X([c, 0]), R = X(pts[2]);
+  const C1 = X([t1 * cosD(be), t1 * sinD(be)]), C2 = X([t2 * cosD(be), t2 * sinD(be)]);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Caso ambiguo">`;
+  s += `<line x1="${B[0]}" y1="${B[1]}" x2="${R[0]}" y2="${R[1]}" stroke="#3B82C4" stroke-width="4" stroke-dasharray="4 6"/>`;
+  s += `<line x1="${B[0]}" y1="${B[1]}" x2="${A[0]}" y2="${A[1]}" stroke="#E76F51" stroke-width="6" stroke-linecap="round"/>`;
+  const cs = showBoth ? [C1, C2] : [C1];
+  cs.forEach((C, i) => {
+    s += `<line x1="${A[0]}" y1="${A[1]}" x2="${C[0]}" y2="${C[1]}" stroke="#2A9D8F" stroke-width="6" stroke-linecap="round" ${i ? 'stroke-dasharray="9 7"' : ""}/>`;
+    s += `<circle cx="${C[0]}" cy="${C[1]}" r="6" fill="#1B2A41"/><text x="${C[0] - 22}" y="${C[1] - 6}" font-family="Calibri,sans-serif" font-weight="700" font-size="15" fill="#1B2A41">C${showBoth ? (i ? "₂" : "₁") : ""}</text>`;
+  });
+  if (showBoth) {
+    const rr = Math.hypot(A[0] - C1[0], A[1] - C1[1]);
+    s += `<circle cx="${A[0]}" cy="${A[1]}" r="${rr}" fill="none" stroke="#2A9D8F" stroke-width="1.5" stroke-dasharray="3 5" opacity=".7"/>`;
+  }
+  // ángulo β
+  s += `<path d="M${B[0]},${B[1]} L${B[0] + 34},${B[1]} A34,34 0 0 0 ${B[0] + 34 * cosD(be)},${B[1] - 34 * sinD(be)} Z" fill="#2A9D8F" opacity=".5"/>`;
+  s += `<text x="${B[0] + 6}" y="${B[1] - 40}" text-anchor="end" font-family="Cambria,serif" font-style="italic" font-weight="700" font-size="17" fill="#2A9D8F">β = ${be}°</text>`;
+  s += `<text x="${(A[0] + B[0]) / 2}" y="${B[1] + 26}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-size="18" fill="#E76F51">c = ${c} cm</text>`;
+  s += `<text x="${(A[0] + C1[0]) / 2 + 30}" y="${(A[1] + C1[1]) / 2}" font-family="Cambria,serif" font-style="italic" font-size="18" fill="#2A9D8F">b = ${b} cm</text>`;
+  s += `<text x="${B[0] - 8}" y="${B[1] + 22}" font-family="Calibri,sans-serif" font-weight="700" font-size="15" fill="#1B2A41">B</text>`;
+  s += `<text x="${A[0] + 6}" y="${A[1] + 22}" font-family="Calibri,sans-serif" font-weight="700" font-size="15" fill="#1B2A41">A</text>`;
+  return s + "</svg>";
+}
+
+function svgBuild(r, solved) {
+  const { D, t1, t2 } = r.d, W = 440, H = 300, P = 40;
+  const h1 = (D / 2) * tanD(t1), h2 = (D / 2) * tanD(t2);
+  const sc = Math.min((W - 2 * P - 40) / D, (H - 2 * P - 30) / Math.max(h1, h2));
+  const gx = (x) => P + 20 + x * sc, gy = (y) => H - P - y * sc;
+  const ax = gx(0), bx = gx(D), ox = gx(D / 2), g = gy(0);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Dos edificios">`;
+  s += `<line x1="${P - 10}" y1="${g}" x2="${W - P + 10}" y2="${g}" stroke="#1B2A41" stroke-width="3"/>`;
+  s += `<rect x="${ax - 26}" y="${gy(h1)}" width="26" height="${g - gy(h1)}" fill="#C9D3E0" stroke="#34495E"/>`;
+  s += `<rect x="${bx}" y="${gy(h2)}" width="26" height="${g - gy(h2)}" fill="#C9D3E0" stroke="#34495E"/>`;
+  s += `<line x1="${ox}" y1="${g}" x2="${ax}" y2="${gy(h1)}" stroke="#3B82C4" stroke-width="4" stroke-dasharray="${solved ? "0" : "8 6"}"/>`;
+  s += `<line x1="${ox}" y1="${g}" x2="${bx}" y2="${gy(h2)}" stroke="#2A9D8F" stroke-width="4" stroke-dasharray="${solved ? "0" : "8 6"}"/>`;
+  s += `<line x1="${ax}" y1="${gy(h1)}" x2="${bx}" y2="${gy(h2)}" stroke="#E76F51" stroke-width="4" stroke-dasharray="8 6"/>`;
+  s += `<circle cx="${ox}" cy="${g}" r="6" fill="#E76F51"/><text x="${ox}" y="${g + 22}" text-anchor="middle" font-weight="700" font-family="Calibri,sans-serif" font-size="15" fill="#1B2A41">O</text>`;
+  s += `<path d="M${ox},${g} L${ox - 34},${g} A34,34 0 0 1 ${ox - 34 * cosD(t1)},${g - 34 * sinD(t1)} Z" fill="#3B82C4" opacity=".45"/>`;
+  s += `<path d="M${ox},${g} L${ox + 34},${g} A34,34 0 0 0 ${ox + 34 * cosD(t2)},${g - 34 * sinD(t2)} Z" fill="#2A9D8F" opacity=".45"/>`;
+  s += `<text x="${ox - 62}" y="${g - 10}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-weight="700" font-size="16" fill="#3B82C4">${t1}°</text>`;
+  s += `<text x="${ox + 62}" y="${g - 10}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-weight="700" font-size="16" fill="#2A9D8F">${t2}°</text>`;
+  s += `<text x="${(ox + ax) / 2 - 22}" y="${(g + gy(h1)) / 2}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-size="16" fill="#3B82C4">OA</text>`;
+  s += `<text x="${(ox + bx) / 2 + 24}" y="${(g + gy(h2)) / 2 + 10}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-size="16" fill="#2A9D8F">OB</text>`;
+  s += `<text x="${(ax + bx) / 2}" y="${(gy(h1) + gy(h2)) / 2 - 12}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-weight="700" font-size="18" fill="#E76F51">d = ?</text>`;
+  s += `<text x="${ax - 13}" y="${gy(h1) - 8}" text-anchor="middle" font-weight="700" font-family="Calibri,sans-serif" font-size="14" fill="#1B2A41">A</text>`;
+  s += `<text x="${bx + 13}" y="${gy(h2) - 8}" text-anchor="middle" font-weight="700" font-family="Calibri,sans-serif" font-size="14" fill="#1B2A41">B</text>`;
+  s += `<text x="${(ax + ox) / 2}" y="${g + 22}" text-anchor="middle" font-family="Cambria,serif" font-size="15" fill="#34495E">${D / 2} m</text>`;
+  s += `<text x="${(bx + ox) / 2}" y="${g + 22}" text-anchor="middle" font-family="Cambria,serif" font-size="15" fill="#34495E">${D / 2} m</text>`;
+  return s + "</svg>";
+}
+
+/* ---------------- Arrastrar y soltar (ratón + táctil + toque) ---------------- */
+let selected = null; // {el, key}
+function makeDraggable(el, getPayload, targetSel, onDrop) {
+  el.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    const payload = getPayload();
+    const ghost = el.cloneNode(true); ghost.classList.add("drag-ghost"); ghost.classList.remove("sel");
+    let moved = false; const sx = e.clientX, sy = e.clientY; let over = null;
+    const move = (ev) => {
+      if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6) { moved = true; document.body.appendChild(ghost); }
+      if (!moved) return;
+      ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px";
+      const t = document.elementFromPoint(ev.clientX, ev.clientY); const tgt = t && t.closest(targetSel);
+      if (over && over !== tgt) over.classList.remove("hover");
+      over = tgt; if (over) over.classList.add("hover");
+    };
+    const up = (ev) => {
+      document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up);
+      ghost.remove(); if (over) over.classList.remove("hover");
+      if (moved) { if (over) onDrop(payload, over); }
+      else { // modo toque: seleccionar
+        document.querySelectorAll(".sel").forEach((x) => x.classList.remove("sel"));
+        if (selected && selected.el === el) { selected = null; document.querySelectorAll(".sel-target").forEach((x) => x.classList.remove("sel-target")); }
+        else { selected = { el, payload, onDrop }; el.classList.add("sel"); document.querySelectorAll(targetSel).forEach((x) => x.classList.add("sel-target")); }
+      }
+    };
+    document.addEventListener("pointermove", move); document.addEventListener("pointerup", up);
+  });
+}
+function bindTapTargets(targetSel) {
+  document.querySelectorAll(targetSel).forEach((t) => t.addEventListener("click", () => {
+    if (!selected) return;
+    const s = selected; selected = null;
+    document.querySelectorAll(".sel").forEach((x) => x.classList.remove("sel"));
+    document.querySelectorAll(".sel-target").forEach((x) => x.classList.remove("sel-target"));
+    s.onDrop(s.payload, t);
+  }));
+}
+
+/* ---------------- Navegación ---------------- */
+const main = () => document.getElementById("main");
+function go(i) {
+  if (i > 0 && !S.nombre) { App.toast("Primero completa tu registro", true); i = 0; }
+  S.st = Math.max(0, Math.min(STATIONS.length - 1, i)); save(); render(); window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function stationStatus(id) {
+  if (id === "registro") return S.nombre ? "done" : "";
+  if (id === "repaso") return S.repaso.done ? "done" : "";
+  if (id === "clasif") return S.clasif.done ? "done" : "";
+  if (id === "fin") return S.cert ? "done" : "";
+  const x = S.r[id]; if (!x) return ""; if (x.solved && !x.revealed) return x.hints ? "help" : "done"; if (x.revealed) return "help"; return "";
+}
+function renderNav() {
+  const nav = document.getElementById("nav"); nav.innerHTML = "";
+  STATIONS.forEach((st, i) => {
+    const b = document.createElement("button");
+    b.textContent = st.id.startsWith("r") && st.id.length === 2 ? st.id.slice(1) : i === 0 ? "✎" : st.id === "repaso" ? "R" : st.id === "clasif" ? "?" : "★";
+    b.title = st.t; b.setAttribute("aria-label", st.t);
+    const stt = stationStatus(st.id); if (stt) b.classList.add(stt);
+    if (i === S.st) b.classList.add("cur");
+    if (i > 0 && !S.nombre) b.disabled = true;
+    b.onclick = () => go(i);
+    nav.appendChild(b);
+    if (i === 0 || i === 2 || i === 9) { const sp = document.createElement("span"); sp.className = "sep"; nav.appendChild(sp); }
+  });
+  const done = STATIONS.filter((s) => ["done", "help"].includes(stationStatus(s.id))).length;
+  document.getElementById("barfill").style.width = (100 * done) / STATIONS.length + "%";
+  document.getElementById("prev").disabled = S.st === 0;
+  document.getElementById("next").disabled = S.st === STATIONS.length - 1 || !S.nombre;
+  document.getElementById("where").textContent = `${S.st + 1} / ${STATIONS.length} · ${STATIONS[S.st].t}`;
+}
+function render() {
+  renderNav();
+  const id = STATIONS[S.st].id;
+  if (id === "registro") renderRegistro();
+  else if (id === "repaso") renderRepaso();
+  else if (id === "clasif") renderClasif();
+  else if (id === "fin") renderFin();
+  else renderReto(id);
+}
+
+/* ---------------- Estación 0: Registro ---------------- */
+function renderRegistro() {
+  main().innerHTML = `
+  <div class="kicker" style="color:#E76F51">MATEMÁTICAS V · PARCIAL 3 · AUTOESTUDIO</div>
+  <h2 class="st">Leyes de Senos y Cosenos</h2>
+  <p class="lead">Resuelve 7 retos con triángulos oblicuángulos. Tus datos son únicos: se generan a partir de tu nombre. Al final obtienes un comprobante con código de verificación.</p>
+  <div class="grid2">
+    <div class="card form">
+      <h3><span class="num">1</span>Tus datos</h3>
+      <label for="nom">Nombre completo (como aparece en lista)</label>
+      <input id="nom" autocomplete="name" value="${esc(S.nombre)}" placeholder="Ej.: Ana Sofía López Ruiz">
+      <label for="gru">Grupo</label>
+      <input id="gru" value="${esc(S.grupo)}" placeholder="Ej.: 501">
+      <div class="row" style="margin-top:16px"><button class="btn gr" id="start">${S.nombre ? "Guardar y continuar" : "Comenzar"}</button></div>
+      <div class="fb bad" id="regfb"></div>
+      ${S.nombre ? `<p class="ex">Si cambias tu nombre o grupo, tus retos cambian y tu avance se reinicia.</p>` : ""}
+    </div>
+    <div>
+      <div class="card"><h3>🧭 Cómo funciona</h3>
+        <p style="margin:0">Cada reto tiene 3 pasos: <b>1)</b> elige la ley, <b>2)</b> arrastra los datos a la fórmula, <b>3)</b> calcula con la calculadora integrada y escribe tu respuesta.</p></div>
+      <div class="card"><h3>🧮 Calculadora</h3><p style="margin:0">Botón naranja de arriba. Trabaja en grados. Usa <b>Ans</b> para no redondear a medio camino.</p></div>
+      <div class="card"><h3>💡 Pistas</h3><p style="margin:0">Cada reto tiene 2 pistas. Usarlas está bien: quedan registradas en tu comprobante.</p></div>
+    </div>
+  </div>`;
+  document.getElementById("start").onclick = () => {
+    const n = document.getElementById("nom").value.trim(), g = document.getElementById("gru").value.trim();
+    if (n.split(/\s+/).length < 2) { document.getElementById("regfb").textContent = "Escribe tu nombre y al menos un apellido."; return; }
+    if (!g) { document.getElementById("regfb").textContent = "Escribe tu grupo."; return; }
+    const changed = norm(n) !== norm(S.nombre) || norm(g) !== norm(S.grupo);
+    if (changed && S.nombre) { const keep = S.st; S = fresh(); S.st = keep; }
+    S.nombre = n; S.grupo = g; RETOS = genRetos(norm(n) + "|" + norm(g)); save(); go(1);
+  };
+}
+
+/* ---------------- Estación 1: Repaso ---------------- */
+const REPASO_Q = [
+  { q: "Toca el lado opuesto al ángulo β", k: "b" },
+  { q: "Toca el ángulo opuesto al lado c", k: "ga" },
+  { q: "Toca el lado opuesto al ángulo α", k: "a" },
+];
+function renderRepaso() {
+  const t = { a: 9, b: 7.2, c: 10, al: 0, be: 0, ga: 0 };
+  t.al = acosD((t.b ** 2 + t.c ** 2 - t.a ** 2) / (2 * t.b * t.c)); t.be = acosD((t.a ** 2 + t.c ** 2 - t.b ** 2) / (2 * t.a * t.c)); t.ga = 180 - t.al - t.be;
+  const q = S.repaso.q;
+  main().innerHTML = `
+  <h2 class="st">Repaso: cada lado con su ángulo opuesto</h2>
+  <p class="lead">En las leyes de Senos y Cosenos, cada lado va con el ángulo que tiene <b>enfrente</b>. Por eso comparten color.</p>
+  <div class="grid2">
+    <div class="fig" id="rfig">${svgTri(t, { hit: true, allAngles: true, labels: true })}</div>
+    <div>
+      <div class="card ${S.repaso.done ? "ok" : ""}">
+        <h3><span class="num">${Math.min(q + 1, 3)}</span>${S.repaso.done ? "¡Listo! Ya identificas las parejas" : `Pregunta ${q + 1} de 3`}</h3>
+        <div class="q">${S.repaso.done ? "a–α · b–β · c–γ" : REPASO_Q[q].q}</div>
+        <div class="fb" id="rfb"></div>
+      </div>
+      <div class="card"><h3>Ley de Senos</h3>
+        <div class="eqs"><span class="c-a">a / sin α</span> = <span class="c-b">b / sin β</span> = <span class="c-c">c / sin γ</span></div>
+        <p class="ex" style="margin-bottom:0">Úsala cuando tengas una <b>pareja completa</b>: un lado y su ángulo opuesto.</p></div>
+      <div class="card"><h3>Ley de Cosenos</h3>
+        <div class="eqs"><span class="c-a">a²</span> = <span class="c-b">b²</span> + <span class="c-c">c²</span> − 2<span class="c-b">b</span><span class="c-c">c</span> · cos <span class="c-a">α</span></div>
+        <p class="ex" style="margin-bottom:0">Úsala con <b>2 lados y el ángulo entre ellos</b>, o con <b>los 3 lados</b>.</p></div>
+    </div>
+  </div>`;
+  document.querySelectorAll("#rfig .tri-hit").forEach((el) => el.addEventListener("click", () => {
+    if (S.repaso.done) return;
+    const fb = document.getElementById("rfb");
+    if (el.dataset.k === REPASO_Q[S.repaso.q].k) {
+      S.repaso.q++; if (S.repaso.q >= 3) { S.repaso.done = true; App.toast("¡Repaso superado! ⭐"); }
+      save(); setTimeout(render, 350); fb.className = "fb ok"; fb.textContent = "¡Correcto!";
+    } else {
+      fb.className = "fb bad";
+      fb.textContent = el.dataset.k.length === 1 ? "Ese es un lado, pero no el que está enfrente. Busca el que no toca al ángulo." : "Ese es otro ángulo. El opuesto está en el vértice que no toca al lado.";
+    }
+  }));
+}
+
+/* ---------------- Estación 2: Clasificador ---------------- */
+const CLASIF = [
+  { id: "k1", txt: "Conozco <b>a</b>, <b>b</b> y el ángulo <b>γ</b> entre ellos", ans: "cos" },
+  { id: "k2", txt: "Conozco <b>los tres lados</b>", ans: "cos" },
+  { id: "k3", txt: "Conozco <b>α</b>, <b>β</b> y el lado <b>a</b>", ans: "sen" },
+  { id: "k4", txt: "Conozco <b>α</b>, <b>β</b> y el lado <b>c</b> entre ellos", ans: "sen" },
+  { id: "k5", txt: "Conozco <b>b</b>, <b>c</b> y el ángulo <b>β</b>", ans: "sen" },
+  { id: "k6", txt: "Conozco <b>a</b>, <b>c</b> y el ángulo <b>β</b> entre ellos", ans: "cos" },
+];
+function renderClasif() {
+  const placed = S.clasif.placed;
+  const order = [...CLASIF].sort((x, y) => seedFrom(x.id + S.nombre) % 97 - seedFrom(y.id + S.nombre) % 97);
+  const pend = order.filter((c) => !placed[c.id]);
+  const inBin = (b) => CLASIF.filter((c) => placed[c.id] === b).map((c) => `<div class="tcard right">${c.txt}</div>`).join("");
+  main().innerHTML = `
+  <h2 class="st">¿Senos o cosenos?</h2>
+  <p class="lead">Arrastra cada tarjeta a la ley que usarías primero. (También puedes tocar una tarjeta y luego la caja.)</p>
+  <div class="card warn"><b>Truco:</b> ¿tienes un lado y su ángulo opuesto? → <b>Senos</b>. Si no → <b>Cosenos</b>. En ALA, primero calcula el tercer ángulo.</div>
+  <div class="tcards" id="pool">${pend.map((c) => `<div class="tcard" data-id="${c.id}">${c.txt}</div>`).join("") || (S.clasif.done ? `<div class="card ok" style="margin:0">¡Todas clasificadas! ⭐ Continúa con el Reto 1.</div>` : "")}</div>
+  <div class="bins">
+    <div class="bin" data-bin="sen"><h4 style="color:#B7652A">Ley de Senos</h4>${inBin("sen")}</div>
+    <div class="bin" data-bin="cos"><h4>Ley de Cosenos</h4>${inBin("cos")}</div>
+  </div>
+  <div class="fb" id="cfb"></div>`;
+  const drop = (id, bin) => {
+    const c = CLASIF.find((x) => x.id === id); const fb = document.getElementById("cfb");
+    if (c.ans === bin.dataset.bin) {
+      S.clasif.placed[id] = bin.dataset.bin;
+      if (Object.keys(S.clasif.placed).length === CLASIF.length) { S.clasif.done = true; App.toast("¡Clasificación perfecta! ⭐"); }
+      save(); render();
+    } else {
+      fb.className = "fb bad";
+      fb.textContent = c.ans === "sen" ? "Revisa: ¿hay un lado con su ángulo opuesto? (o puedes obtenerlo con la suma de 180°)" : "Aquí no hay pareja completa: el ángulo conocido no está frente a un lado conocido.";
+      const el = document.querySelector(`.tcard[data-id="${id}"]`); if (el) { el.classList.add("wrong"); el.style.animation = "shake .35s"; setTimeout(() => (el.style.animation = ""), 400); }
+    }
+  };
+  document.querySelectorAll("#pool .tcard").forEach((el) => makeDraggable(el, () => el.dataset.id, ".bin", drop));
+  bindTapTargets(".bin");
+}
+
+/* ---------------- Retos ---------------- */
+const FORMULAS = {
+  r1: { u: ["b = ", { s: ["a"] }, " · sin ", { s: ["be"] }, " ÷ sin ", { s: ["al"] }] },
+  r2: { u: ["a² = ", { s: ["b", "c"], g: 1 }, "² + ", { s: ["b", "c"], g: 1 }, "² − 2 · ", { s: ["b", "c"], g: 2 }, " · ", { s: ["b", "c"], g: 2 }, " · cos ", { s: ["al"] }] },
+  r3: { u: ["sin β = ", { s: ["b"] }, " · sin ", { s: ["al"] }, " ÷ ", { s: ["a"] }] },
+  r4: { u: ["cos α = (", { s: ["b", "c"], g: 1 }, "² + ", { s: ["b", "c"], g: 1 }, "² − ", { s: ["a"] }, "²) ÷ (2 · ", { s: ["b", "c"], g: 2 }, " · ", { s: ["b", "c"], g: 2 }, ")"] },
+  r5: { u: ["sin γ = ", { s: ["c"] }, " · sin ", { s: ["be"] }, " ÷ ", { s: ["b"] }] },
+  r6: { u: ["c² = ", { s: ["a", "b"], g: 1 }, "² + ", { s: ["a", "b"], g: 1 }, "² − 2 · ", { s: ["a", "b"], g: 2 }, " · ", { s: ["a", "b"], g: 2 }, " · cos ", { s: ["ga"] }] },
+  r7: { u: ["d² = ", { s: ["OA", "OB"], g: 1 }, "² + ", { s: ["OA", "OB"], g: 1 }, "² − 2 · ", { s: ["OA", "OB"], g: 2 }, " · ", { s: ["OA", "OB"], g: 2 }, " · cos ", { s: ["O"] }] },
+};
+
+function retoTexts(id, r) {
+  const d = r.d;
+  switch (id) {
+    case "r1": return {
+      story: `Dos antenas, A y B, detectan un dron en C. Se sabe que <span class="c-a">a = ${d.a} m</span>, <span class="c-a">α = ${d.al}°</span> y <span class="c-b">β = ${d.be}°</span>. ¿Qué distancia <span class="c-b">b</span> hay de la antena A al dron?`,
+      law: "sen", lawWhy: "Tienes la pareja completa a–α (mismo color). Con ella y β sale b.",
+      h1: "Escribe la proporción con la pareja completa: b / sin β = a / sin α, y despeja b.",
+      h2: `b = ${d.a} · sin ${d.be}° ÷ sin ${d.al}°`,
+      chips: ["a", "al", "be"], extra: [{ k: "b", lab: "b = ?" }] };
+    case "r2": return {
+      story: `Dos senderos salen del punto A: miden <span class="c-b">b = ${d.b} m</span> y <span class="c-c">c = ${d.c} m</span>, y forman un ángulo <span class="c-a">α = ${d.al}°</span>. ¿Cuánto mide el atajo <span class="c-a">a</span> que une sus extremos?`,
+      law: "cos", lawWhy: "Dos lados y el ángulo entre ellos (LAL): no hay pareja completa.",
+      h1: "Usa a² = b² + c² − 2bc·cos α y al final saca raíz cuadrada.",
+      h2: `a² = ${d.b}² + ${d.c}² − 2(${d.b})(${d.c})·cos ${d.al}° = ${f2(r.ans[0].v ** 2)}`,
+      chips: ["b", "c", "al"], extra: [{ k: "a", lab: "a = ?" }] };
+    case "r3": return {
+      story: `En la armadura triangular de un techo, <span class="c-a">a = ${d.a} m</span>, <span class="c-b">b = ${d.b} m</span> y <span class="c-a">α = ${d.al}°</span>. Encuentra el ángulo <span class="c-b">β</span>.`,
+      law: "sen", lawWhy: "La pareja a–α está completa; b va con β.",
+      h1: "De b / sin β = a / sin α despeja sin β; después usa sin⁻¹ en la calculadora.",
+      h2: `sin β = ${d.b} · sin ${d.al}° ÷ ${d.a} = ${f4(r.ans[0].v ? sinD(r.ans[0].v) : 0)}`,
+      chips: ["a", "b", "al"], extra: [{ k: "be", lab: "β = ?" }] };
+    case "r4": return {
+      story: `Un terreno triangular mide <span class="c-a">a = ${d.a} m</span>, <span class="c-b">b = ${d.b} m</span> y <span class="c-c">c = ${d.c} m</span>. ¿Cuánto mide el ángulo <span class="c-a">α</span>, que está frente al lado a?`,
+      law: "cos", lawWhy: "Tres lados (LLL): no conoces ningún ángulo, no hay pareja completa.",
+      h1: "Despeja: cos α = (b² + c² − a²) ÷ (2bc). Luego usa cos⁻¹.",
+      h2: `cos α = (${d.b}² + ${d.c}² − ${d.a}²) ÷ (2·${d.b}·${d.c}) = ${f4(cosD(r.ans[0].v))}`,
+      chips: ["a", "b", "c"], extra: [{ k: "al", lab: "α = ?" }] };
+    case "r5": return {
+      story: `Un triángulo tiene <span class="c-b">b = ${d.b} cm</span>, <span class="c-c">c = ${d.c} cm</span> y <span class="c-b">β = ${d.be}°</span>. Encuentra el ángulo <span class="c-c">γ</span>. ¡Ojo: puede haber más de una respuesta!`,
+      law: "two", lawWhy: `b es menor que c pero mayor que c·sin β ≈ ${f2(d.c * sinD(d.be))}: el lado b alcanza la línea en dos puntos, así que hay dos triángulos.`,
+      h1: "Calcula γ₁ con sin⁻¹ (sale agudo). El otro es su suplemento: γ₂ = 180° − γ₁.",
+      h2: `sin γ = ${d.c} · sin ${d.be}° ÷ ${d.b} = ${f4(sinD(r.ans[0].v))}`,
+      chips: ["b", "c", "be"], extra: [{ k: "ga", lab: "γ = ?" }] };
+    case "r6": return {
+      story: `La vela triangular de un barco tiene <span class="c-a">a = ${d.a} m</span>, <span class="c-b">b = ${d.b} m</span> y el ángulo entre ellos <span class="c-c">γ = ${d.ga}°</span>. Encuentra <span class="c-c">c</span>, <span class="c-a">α</span> y <span class="c-b">β</span>.`,
+      law: "cos", lawWhy: "LAL: primero c con Cosenos. Después ya tendrás la pareja c–γ para usar Senos.",
+      h1: "1) c con Cosenos. 2) α con Senos (α está frente al lado menor, así que es agudo). 3) β = 180° − γ − α.",
+      h2: `c = √(${d.a}² + ${d.b}² − 2(${d.a})(${d.b})·cos ${d.ga}°) ≈ ${f2(r.ans[0].v)};  sin α = ${d.a} · sin ${d.ga}° ÷ c`,
+      chips: ["a", "b", "ga"], extra: [{ k: "c", lab: "c = ?" }] };
+    case "r7": return {
+      story: `Dos edificios están separados <b>${d.D} m</b>. Desde el punto O, a la mitad entre ellos, se ven sus azoteas con ángulos de elevación de <span class="c-a">${d.t1}°</span> y <span class="c-b">${d.t2}°</span>. ¿Qué distancia <span class="c-c">d</span> hay entre las azoteas?`,
+      law: "cos", lawWhy: "En el triángulo O–A–B conocerás OA, OB y el ángulo entre ellos (∠O): LAL.",
+      h1: `OA = ${d.D / 2} ÷ cos ${d.t1}°,  OB = ${d.D / 2} ÷ cos ${d.t2}°,  ∠O = 180° − ${d.t1}° − ${d.t2}°.`,
+      h2: "d² = OA² + OB² − 2·OA·OB·cos ∠O. Comprueba con Pitágoras usando la diferencia de alturas.",
+      chips: ["OA", "OB", "O"], extra: [{ k: "D", lab: `D = ${d.D} m` }] };
+  }
+}
+function chipLabel(k, r) {
+  const d = r.d;
+  if (k in d && !["D"].includes(k)) return `${SYM[k]} = ${d[k]}${isAng(k) ? "°" : " " + r.u}`;
+  return SYM[k];
+}
+function slotFill(k, r) { const d = r.d; if (k in d) return `${d[k]}${isAng(k) ? "°" : ""}`; return SYM[k]; }
+
+function figFor(id, r, st) {
+  if (id === "r5") return svgAmbig(r, st.law);
+  if (id === "r7") return svgBuild(r, st.solved);
+  const show = st.solved || st.revealed;
+  return svgTri(r.tri, { known: show ? [...r.known, ...r.unknown] : r.known, unknown: show ? [] : r.unknown, u: r.u });
+}
+
+function renderReto(id) {
+  if (!RETOS) RETOS = genRetos(norm(S.nombre) + "|" + norm(S.grupo));
+  const n = parseInt(id.slice(1)), r = RETOS[n - 1], st = rs(id), tx = retoTexts(id, r), info = RETO_INFO[id];
+  const F = FORMULAS[id];
+  const lawCard = id === "r5"
+    ? `<p style="margin:0 0 10px">¿Cuántos triángulos distintos cumplen estos datos?</p>
+       <div class="row">${["0", "1", "2"].map((v) => `<button class="choice ${st.law && v === "2" ? "right" : ""}" data-law="${v === "2" ? "two" : v}">${v}</button>`).join("")}</div>`
+    : `<p style="margin:0 0 10px">¿Qué ley usas para empezar?</p>
+       <div class="row"><button class="choice ${st.law && tx.law === "sen" ? "right" : ""}" data-law="sen">Ley de Senos</button><button class="choice ${st.law && tx.law === "cos" ? "right" : ""}" data-law="cos">Ley de Cosenos</button></div>`;
+  let slotIdx = 0;
+  const formHTML = F.u.map((p) => typeof p === "string" ? esc(p) : `<span class="slot ${st.formula ? "filled right" : ""}" data-i="${slotIdx++}">${st.formula ? `<span class="${COL[p.s[0]]}"></span>` : ""}</span>`).join("");
+  const chipsHTML = [...tx.chips.map((k) => ({ k, lab: chipLabel(k, r) })), ...tx.extra].map((c) => `<span class="chip ${COL[c.k]}" data-k="${c.k}">${esc(c.lab)}</span>`).join("");
+  const ansHTML = r.ans.map((a) => `<label for="in_${a.k}">${a.label} =</label><input class="answer ${st.solved ? "right" : ""}" id="in_${a.k}" data-k="${a.k}" inputmode="decimal" autocomplete="off" value="${st.vals[a.k] != null ? esc(st.vals[a.k]) : ""}" ${st.solved ? "readonly" : ""}><span>${a.u}</span>`).join("");
+  main().innerHTML = `
+  <div class="kicker" style="color:#E76F51">RETO ${n} DE 7 · ${info.ley.toUpperCase()}</div>
+  <h2 class="st">${info.t}</h2>
+  <div class="grid2">
+    <div>
+      <div class="fig">${figFor(id, r, st)}</div>
+      <div class="card" style="margin-top:14px"><div class="story">${tx.story}</div></div>
+    </div>
+    <div>
+      <div class="card ${st.law ? "ok" : ""}" id="s1"><h3><span class="num">1</span>${id === "r5" ? "¿Una o dos respuestas?" : "Elige la ley"}</h3>
+        ${lawCard}<div class="fb ${st.law ? "ok" : ""}" id="fb1">${st.law ? "✔ " + tx.lawWhy : ""}</div></div>
+      <div class="card ${st.formula ? "ok" : ""} ${st.law ? "" : "locked"}" id="s2"><h3><span class="num">2</span>Arma la fórmula</h3>
+        ${st.formula ? "" : `<p class="ex" style="margin-top:0">Arrastra (o toca y coloca) cada dato en su casilla.</p><div class="chips">${chipsHTML}</div>`}
+        <div class="formula" id="formula">${formHTML}</div>
+        ${st.formula ? `<div class="fb ok">✔ Fórmula correcta</div>` : `<div class="row" style="margin-top:10px"><button class="btn" id="chkF">Revisar fórmula</button><button class="btn sec" id="clrF">Limpiar</button></div><div class="fb" id="fb2"></div>`}
+      </div>
+      <div class="card ${st.solved ? "ok" : ""} ${st.formula ? "" : "locked"}" id="s3"><h3><span class="num">3</span>Calcula y responde</h3>
+        <p class="ex" style="margin-top:0">Usa la calculadora 🧮 y escribe con 2 decimales. Ejemplo de formato: <b>14.70</b></p>
+        <div class="ans">${ansHTML}</div>
+        ${st.solved ? `<div class="fb ok">${st.revealed ? "Solución mostrada. Revisa el procedimiento en tu cuaderno." : "✔ ¡Reto superado!"}</div>` :
+        `<div class="row" style="margin-top:12px"><button class="btn gr" id="chkA">Revisar</button><button class="btn or" id="hint">💡 Pista ${Math.min(st.hints + 1, 2)}/2</button>${st.attempts >= 3 ? `<button class="btn sec" id="reveal">Ver solución</button>` : ""}<button class="btn sec" id="openCalc">🧮</button></div><div class="fb" id="fb3"></div>`}
+        <div id="hints">${st.hints >= 1 ? `<div class="hint"><b>Pista 1:</b> ${tx.h1}</div>` : ""}${st.hints >= 2 ? `<div class="hint"><b>Pista 2:</b> ${tx.h2}</div>` : ""}</div>
+        ${st.revealed ? `<div class="hint"><b>Solución:</b> ${r.ans.map((a) => `${a.label} ≈ ${f2(a.v)} ${a.u}`).join(" · ")}</div>` : ""}
+      </div>
+      ${st.solved ? `<div class="row"><button class="btn gr" id="nextReto">${n < 7 ? "Siguiente reto →" : "Ir al comprobante →"}</button></div>` : ""}
+    </div>
+  </div>`;
+
+  // Paso 1
+  document.querySelectorAll("#s1 .choice").forEach((b) => b.onclick = () => {
+    if (st.law) return;
+    const fb = document.getElementById("fb1");
+    if (b.dataset.law === tx.law) { st.law = true; save(); b.classList.add("right"); fb.className = "fb ok"; fb.textContent = "✔ " + tx.lawWhy; setTimeout(render, 900); }
+    else { b.classList.add("wrong"); setTimeout(() => b.classList.remove("wrong"), 500); fb.className = "fb bad";
+      fb.textContent = id === "r5" ? "Piensa: ¿el lado b puede tocar la línea del ángulo β en más de un punto?" : "Revisa el truco: ¿tienes un lado con su ángulo opuesto?"; }
+  });
+  // Paso 2
+  const slots = [...document.querySelectorAll("#formula .slot")];
+  const specs = F.u.filter((p) => typeof p !== "string");
+  if (st.formula) {
+    slots.forEach((sl, i) => { const k = st.fill ? st.fill[i] : specs[i].s[0]; sl.innerHTML = `<span class="${COL[k]}">${esc(slotFill(k, r))}</span>`; });
+  } else {
+    const fill = st.fill || new Array(slots.length).fill(null);
+    const paint = () => slots.forEach((sl, i) => { sl.classList.toggle("filled", !!fill[i]); sl.innerHTML = fill[i] ? `<span class="${COL[fill[i]]}">${esc(slotFill(fill[i], r))}</span>` : ""; });
+    paint();
+    const drop = (k, sl) => { fill[+sl.dataset.i] = k; sl.classList.remove("wrong", "right"); paint(); };
+    document.querySelectorAll("#s2 .chip").forEach((c) => makeDraggable(c, () => c.dataset.k, ".slot", drop));
+    bindTapTargets("#formula .slot");
+    slots.forEach((sl) => sl.addEventListener("dblclick", () => { fill[+sl.dataset.i] = null; paint(); }));
+    document.getElementById("clrF").onclick = () => { fill.fill(null); slots.forEach((s) => s.classList.remove("wrong", "right")); paint(); };
+    document.getElementById("chkF").onclick = () => {
+      const fb = document.getElementById("fb2");
+      if (fill.some((x) => !x)) { fb.className = "fb bad"; fb.textContent = "Faltan casillas por llenar."; return; }
+      let ok = true;
+      specs.forEach((sp, i) => {
+        let good = sp.s.includes(fill[i]);
+        if (good && sp.g) { // en un grupo, cada dato aparece una vez
+          const grp = specs.map((x, j) => (x.g === sp.g ? fill[j] : null)).filter(Boolean);
+          good = sp.s.every((k) => grp.includes(k));
+        }
+        slots[i].classList.toggle("right", good); slots[i].classList.toggle("wrong", !good); ok = ok && good;
+      });
+      if (ok) { st.formula = true; st.fill = fill.slice(); save(); fb.className = "fb ok"; fb.textContent = "✔ ¡Fórmula correcta!"; setTimeout(render, 800); }
+      else { fb.className = "fb bad"; fb.textContent = "Las casillas en rojo no van ahí. Recuerda: cada lado va con su ángulo opuesto."; }
+    };
+  }
+  // Paso 3
+  document.querySelectorAll("#s3 input.answer").forEach((inp) => inp.addEventListener("input", () => { st.vals[inp.dataset.k] = inp.value; inp.classList.remove("wrong", "right"); save(); }));
+  const ca = document.getElementById("chkA");
+  if (ca) ca.onclick = () => {
+    const fb = document.getElementById("fb3"); let allOk = true, empty = false;
+    r.ans.forEach((a) => {
+      const inp = document.getElementById("in_" + a.k);
+      const v = parseFloat(String(inp.value).replace(",", ".").replace(/[^\d.\-]/g, ""));
+      if (!isFinite(v)) { empty = true; allOk = false; inp.classList.add("wrong"); return; }
+      const ok = Math.abs(v - a.v) <= Math.max(0.06, Math.abs(a.v) * 0.002);
+      inp.classList.toggle("right", ok); inp.classList.toggle("wrong", !ok); allOk = allOk && ok;
+    });
+    if (empty) { fb.className = "fb bad"; fb.textContent = "Escribe un número en cada casilla (ejemplo: 14.70)."; return; }
+    st.attempts++;
+    if (allOk) { st.solved = true; save(); App.toast(`¡Reto ${n} superado! ⭐`); setTimeout(render, 700); }
+    else {
+      save(); fb.className = "fb bad";
+      fb.textContent = st.attempts >= 3 ? "Aún no. Puedes pedir una pista o ver la solución." : "Aún no. Revisa: ¿calculadora en grados? ¿usaste Ans sin redondear?";
+      if (st.attempts === 3) render();
+    }
+  };
+  const hb = document.getElementById("hint");
+  if (hb) hb.onclick = () => { if (st.hints < 2) { st.hints++; save(); render(); } };
+  const rv = document.getElementById("reveal");
+  if (rv) rv.onclick = () => { st.revealed = true; st.solved = true; r.ans.forEach((a) => (st.vals[a.k] = f2(a.v))); save(); render(); };
+  const oc = document.getElementById("openCalc"); if (oc) oc.onclick = () => { document.getElementById("calc").classList.add("open"); };
+  const nr = document.getElementById("nextReto"); if (nr) nr.onclick = () => go(S.st + 1);
+}
+
+/* ---------------- Comprobante ---------------- */
+function resumen() {
+  const ids = ["r1", "r2", "r3", "r4", "r5", "r6", "r7"];
+  const sup = ids.filter((i) => S.r[i] && S.r[i].solved && !S.r[i].revealed).length;
+  const pistas = ids.reduce((a, i) => a + (S.r[i] ? S.r[i].hints : 0), 0);
+  const sol = ids.filter((i) => S.r[i] && S.r[i].revealed).length;
+  return { sup, pistas, sol, txt: `${sup}/7 · pistas ${pistas} · soluciones ${sol}` };
+}
+function fechaStr(d) { const p = (x) => String(x).padStart(2, "0"); return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+function renderFin() {
+  const R = resumen();
+  const ids = ["r1", "r2", "r3", "r4", "r5", "r6", "r7"];
+  const estado = (i) => { const x = S.r[i]; if (!x || !x.solved) return ["✖ Pendiente", ""]; if (x.revealed) return ["◐ Con solución", "help"]; if (x.hints) return [`✔ Superado (${x.hints} pista${x.hints > 1 ? "s" : ""})`, "help"]; return ["✔ Superado", "done"]; };
+  const variante = codeFor(norm(S.nombre) + "|" + norm(S.grupo)).slice(0, 4);
+  let certHTML = "";
+  if (S.cert) {
+    const payload = `${norm(S.nombre)}|${norm(S.grupo)}|${S.cert.fecha}|${S.cert.res}`;
+    certHTML = `<div id="cert">
+      <div class="kicker" style="color:#E76F51">UNIVERSIDAD XOCHICALCO · PREPARATORIA · MATEMÁTICAS V</div>
+      <h3>Comprobante de retos superados</h3>
+      <p style="margin:4px 0 10px;color:#34495E">Guía de autoestudio: Leyes de Senos y Cosenos</p>
+      <p style="margin:0"><b>Nombre:</b> ${esc(S.nombre)}<br><b>Grupo:</b> ${esc(S.grupo)}<br><b>Fecha:</b> ${S.cert.fecha}<br><b>Variante:</b> ${variante}</p>
+      <div class="badges">${ids.map((i, k) => `<div class="badge ${estado(i)[1]}">${k + 1}</div>`).join("")}</div>
+      <table><tr><th>Estación</th><th>Estado</th><th>Intentos</th></tr>
+        <tr><td>Repaso: parejas lado–ángulo</td><td>${S.repaso.done ? "✔ Completado" : "✖ Pendiente"}</td><td>—</td></tr>
+        <tr><td>Clasificador: ¿Senos o cosenos?</td><td>${S.clasif.done ? "✔ Completado" : "✖ Pendiente"}</td><td>—</td></tr>
+        ${ids.map((i, k) => `<tr><td>Reto ${k + 1} · ${RETO_INFO[i].t}</td><td>${estado(i)[0]}</td><td>${S.r[i] ? S.r[i].attempts : 0}</td></tr>`).join("")}
+      </table>
+      <p style="margin:6px 0"><b>Resultado:</b> ${S.cert.res}</p>
+      <p style="margin:6px 0"><b>Código de verificación:</b> <span class="code">${codeFor(payload)}</span></p>
+      <p class="ex">El docente puede comprobar este código en la página de verificación. Si cambia cualquier dato del comprobante, el código deja de coincidir.</p>
+    </div>
+    <div class="row noprint" style="margin-top:14px"><button class="btn" onclick="window.print()">🖨️ Imprimir o guardar PDF</button><button class="btn sec" id="regen">Actualizar comprobante</button></div>`;
+  }
+  main().innerHTML = `
+  <h2 class="st noprint">Tu comprobante</h2>
+  <p class="lead noprint">Llevas <b>${R.sup} de 7</b> retos superados sin ver la solución. ${R.sup < 7 ? "Puedes volver a los retos pendientes y luego actualizar tu comprobante." : "¡Excelente trabajo! 🎉"}</p>
+  ${S.cert ? certHTML : `<div class="card noprint"><p style="margin-top:0">Cuando estés listo, genera tu comprobante. Se registra la fecha y hora en que lo generes.</p><button class="btn gr" id="gen">Generar comprobante</button></div>`}`;
+  const g = document.getElementById("gen") || document.getElementById("regen");
+  if (g) g.onclick = () => { S.cert = { fecha: fechaStr(new Date()), res: resumen().txt }; save(); render(); };
+}
+
+/* ---------------- Inicio ---------------- */
+function init() {
+  S = load() || fresh();
+  if (S.nombre) RETOS = genRetos(norm(S.nombre) + "|" + norm(S.grupo));
+  document.getElementById("prev").onclick = () => go(S.st - 1);
+  document.getElementById("next").onclick = () => go(S.st + 1);
+  document.getElementById("calcBtn").onclick = () => Calc.toggle();
+  Calc.init();
+  render();
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
