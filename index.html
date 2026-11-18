@@ -434,7 +434,7 @@ function fresh() {
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 function load() { try { const x = JSON.parse(localStorage.getItem(KEY)); if (x && x.r) return x; } catch (e) {} return null; }
-function rs(id) { if (!S.r[id]) S.r[id] = { step: 1, law: false, formula: false, solved: false, attempts: 0, hints: 0, revealed: false, vals: {} }; return S.r[id]; }
+function rs(id) { if (!S.r[id]) S.r[id] = { step: 1, law: false, rel: false, formula: false, solved: false, attempts: 0, hints: 0, revealed: false, vals: {} }; return S.r[id]; }
 
 const App = {
   toast(msg, warn) {
@@ -653,7 +653,7 @@ function renderRegistro() {
     </div>
     <div>
       <div class="card"><h3>🧭 Cómo funciona</h3>
-        <p style="margin:0">Cada reto tiene 3 pasos: <b>1)</b> elige la ley, <b>2)</b> arrastra los datos a la fórmula, <b>3)</b> calcula con la calculadora integrada y escribe tu respuesta.</p></div>
+        <p style="margin:0">Cada reto tiene 4 pasos: <b>1)</b> elige la ley, <b>2)</b> plantea la relación, <b>3)</b> arrastra los datos a la fórmula despejada, <b>4)</b> calcula con la calculadora integrada y escribe tu respuesta.</p></div>
       <div class="card"><h3>🧮 Calculadora</h3><p style="margin:0">Botón naranja de arriba. Trabaja en grados. Usa <b>Ans</b> para no redondear a medio camino.</p></div>
       <div class="card"><h3>💡 Pistas</h3><p style="margin:0">Cada reto tiene 2 pistas. Usarlas está bien: quedan registradas en tu comprobante.</p></div>
     </div>
@@ -761,6 +761,32 @@ const FORMULAS = {
   r7: { u: ["d² = ", { s: ["OA", "OB"], g: 1 }, "² + ", { s: ["OA", "OB"], g: 1 }, "² − 2 · ", { s: ["OA", "OB"], g: 2 }, " · ", { s: ["OA", "OB"], g: 2 }, " · cos ", { s: ["O"] }] },
 };
 
+
+const RELS = {
+  r1: ["b / sin β = a / sin α", "b / sin α = a / sin β", "b · sin β = a · sin α"],
+  r2: ["a² = b² + c² − 2bc · cos α", "a² = b² + c² − 2bc · cos β", "a² = b² + c² + 2bc · cos α"],
+  r3: ["a / sin α = b / sin β", "a / sin β = b / sin α", "a / cos α = b / cos β"],
+  r4: ["a² = b² + c² − 2bc · cos α", "b² = a² + c² − 2ac · cos α", "a² = b² + c² − 2bc · sin α"],
+  r5: ["b / sin β = c / sin γ", "b / sin γ = c / sin β", "b / sin β = c / sin α"],
+  r6: ["c² = a² + b² − 2ab · cos γ", "c² = a² + b² − 2ab · cos α", "c² = a² + b² + 2ab · cos γ"],
+  r7: ["d² = OA² + OB² − 2 · OA · OB · cos ∠O", "d² = OA² + OB²", "d / sin ∠O = OA / sin θ₁"],
+};
+const REL_WHY = {
+  r1: "Cada lado va con su ángulo opuesto: b con β y a con α.",
+  r2: "El lado que buscas (a) va con el ángulo que está entre b y c (α).",
+  r3: "La pareja completa a–α se iguala con la pareja b–β.",
+  r4: "El ángulo α que buscas está frente al lado a, que va solo del lado izquierdo.",
+  r5: "b va con β y c va con γ.",
+  r6: "c va del lado izquierdo y el ángulo es γ, el que está entre a y b.",
+  r7: "En el triángulo O–A–B, d está frente a ∠O. Solo sería Pitágoras si ∠O midiera 90°.",
+};
+function colorEq(str) {
+  return esc(str)
+    .replace(/(?<![A-Za-z])([abc])(?=[²\s/·)]|$)/g, (m, k) => `<span class="${COL[k]}">${k}</span>`)
+    .replace(/α/g, '<span class="c-a">α</span>').replace(/β/g, '<span class="c-b">β</span>').replace(/γ/g, '<span class="c-c">γ</span>')
+    .replace(/OA/g, '<span class="c-a">OA</span>').replace(/OB/g, '<span class="c-b">OB</span>').replace(/∠O/g, '<span class="c-c">∠O</span>');
+}
+
 function retoTexts(id, r) {
   const d = r.d;
   switch (id) {
@@ -826,6 +852,7 @@ function renderReto(id) {
   if (!RETOS) RETOS = genRetos(norm(S.nombre) + "|" + norm(S.grupo));
   const n = parseInt(id.slice(1)), r = RETOS[n - 1], st = rs(id), tx = retoTexts(id, r), info = RETO_INFO[id];
   const F = FORMULAS[id];
+  const relOpts = [...RELS[id]].sort((x, y) => (seedFrom(x + S.nombre) % 101) - (seedFrom(y + S.nombre) % 101));
   const lawCard = id === "r5"
     ? `<p style="margin:0 0 10px">¿Cuántos triángulos distintos cumplen estos datos?</p>
        <div class="row">${["0", "1", "2"].map((v) => `<button class="choice ${st.law && v === "2" ? "right" : ""}" data-law="${v === "2" ? "two" : v}">${v}</button>`).join("")}</div>`
@@ -846,12 +873,16 @@ function renderReto(id) {
     <div>
       <div class="card ${st.law ? "ok" : ""}" id="s1"><h3><span class="num">1</span>${id === "r5" ? "¿Una o dos respuestas?" : "Elige la ley"}</h3>
         ${lawCard}<div class="fb ${st.law ? "ok" : ""}" id="fb1">${st.law ? "✔ " + tx.lawWhy : ""}</div></div>
-      <div class="card ${st.formula ? "ok" : ""} ${st.law ? "" : "locked"}" id="s2"><h3><span class="num">2</span>Arma la fórmula</h3>
+      <div class="card ${st.rel ? "ok" : ""} ${st.law ? "" : "locked"}" id="sR"><h3><span class="num">2</span>Plantea la relación</h3>
+        <p style="margin:0 0 10px">¿Cuál es la relación correcta para este triángulo?</p>
+        <div class="row" style="flex-direction:column;align-items:stretch">${relOpts.map((o) => `<button class="choice eqs ${st.rel && o === RELS[id][0] ? "right" : ""}" style="text-align:left;font-weight:400" data-rel="${esc(o)}">${colorEq(o)}</button>`).join("")}</div>
+        <div class="fb ${st.rel ? "ok" : ""}" id="fbR">${st.rel ? "✔ " + REL_WHY[id] + " Ahora despeja lo que buscas." : ""}</div></div>
+      <div class="card ${st.formula ? "ok" : ""} ${st.rel ? "" : "locked"}" id="s2"><h3><span class="num">3</span>Arma la fórmula despejada</h3>
         ${st.formula ? "" : `<p class="ex" style="margin-top:0">Arrastra (o toca y coloca) cada dato en su casilla.</p><div class="chips">${chipsHTML}</div>`}
         <div class="formula" id="formula">${formHTML}</div>
         ${st.formula ? `<div class="fb ok">✔ Fórmula correcta</div>` : `<div class="row" style="margin-top:10px"><button class="btn" id="chkF">Revisar fórmula</button><button class="btn sec" id="clrF">Limpiar</button></div><div class="fb" id="fb2"></div>`}
       </div>
-      <div class="card ${st.solved ? "ok" : ""} ${st.formula ? "" : "locked"}" id="s3"><h3><span class="num">3</span>Calcula y responde</h3>
+      <div class="card ${st.solved ? "ok" : ""} ${st.formula ? "" : "locked"}" id="s3"><h3><span class="num">4</span>Calcula y responde</h3>
         <p class="ex" style="margin-top:0">Usa la calculadora 🧮 y escribe con 2 decimales. Ejemplo de formato: <b>14.70</b></p>
         <div class="ans">${ansHTML}</div>
         ${st.solved ? `<div class="fb ok">${st.revealed ? "Solución mostrada. Revisa el procedimiento en tu cuaderno." : "✔ ¡Reto superado!"}</div>` :
@@ -871,7 +902,14 @@ function renderReto(id) {
     else { b.classList.add("wrong"); setTimeout(() => b.classList.remove("wrong"), 500); fb.className = "fb bad";
       fb.textContent = id === "r5" ? "Piensa: ¿el lado b puede tocar la línea del ángulo β en más de un punto?" : "Revisa el truco: ¿tienes un lado con su ángulo opuesto?"; }
   });
-  // Paso 2
+  // Paso 2: relación
+  document.querySelectorAll("#sR .choice").forEach((b) => b.onclick = () => {
+    if (st.rel) return;
+    const fb = document.getElementById("fbR");
+    if (b.dataset.rel === RELS[id][0]) { st.rel = true; save(); b.classList.add("right"); fb.className = "fb ok"; fb.textContent = "✔ " + REL_WHY[id]; setTimeout(render, 1100); }
+    else { b.classList.add("wrong"); setTimeout(() => b.classList.remove("wrong"), 500); fb.className = "fb bad"; fb.textContent = "Revisa los colores: cada lado debe ir con su ángulo opuesto (mismo color)."; }
+  });
+  // Paso 3: fórmula despejada
   const slots = [...document.querySelectorAll("#formula .slot")];
   const specs = F.u.filter((p) => typeof p !== "string");
   if (st.formula) {
@@ -901,7 +939,7 @@ function renderReto(id) {
       else { fb.className = "fb bad"; fb.textContent = "Las casillas en rojo no van ahí. Recuerda: cada lado va con su ángulo opuesto."; }
     };
   }
-  // Paso 3
+  // Paso 4
   document.querySelectorAll("#s3 input.answer").forEach((inp) => inp.addEventListener("input", () => { st.vals[inp.dataset.k] = inp.value; inp.classList.remove("wrong", "right"); save(); }));
   const ca = document.getElementById("chkA");
   if (ca) ca.onclick = () => {
