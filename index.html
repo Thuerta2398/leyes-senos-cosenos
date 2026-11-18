@@ -271,14 +271,14 @@ function genRetos(seedStr) {
       known: ["a", "b", "ga"], unknown: ["c", "al", "be"],
       ans: [{ k: "c", v: c, label: "c", u: "m" }, { k: "al", v: al, label: "α", u: "°" }, { k: "be", v: be, label: "β", u: "°" }] });
   }
-  // R7 · Misión final: dos edificios, observador en el punto medio
+  // R7 · Problema aplicado ALA: dos torres y un incendio
   {
-    const D = R.pick([60, 70, 80, 90, 100]);
-    let t1, t2; do { t1 = R.int(28, 42); t2 = R.int(46, 62); } while (Math.abs(t1 + t2 - 90) < 3);
-    const OA = D / 2 / cosD(t1), OB = D / 2 / cosD(t2), O = 180 - t1 - t2;
-    const d = Math.sqrt(OA * OA + OB * OB - 2 * OA * OB * cosD(O));
-    retos.push({ id: "r7", ley: "cosenos", u: "m", d: { D, t1, t2 }, geo: { OA, OB, O, d },
-      ans: [{ k: "OA", v: OA, label: "OA", u: "m" }, { k: "OB", v: OB, label: "OB", u: "m" }, { k: "O", v: O, label: "∠O", u: "°" }, { k: "d", v: d, label: "d", u: "m" }] });
+    const c = R.int(20, 60) * 10;
+    let al, be; do { al = R.int(40, 70); be = R.int(45, 75); } while (180 - al - be < 40 || Math.abs(al - be) < 5);
+    const ga = 180 - al - be, b = (c * sinD(be)) / sinD(ga), a = (c * sinD(al)) / sinD(ga);
+    retos.push({ id: "r7", ley: "senos", u: "m", d: { c, al, be }, tri: { a, b, c, al, be, ga },
+      known: ["c", "al", "be"], unknown: ["ga", "b"],
+      ans: [{ k: "ga", v: ga, label: "γ", u: "°" }, { k: "b", v: b, label: "b", u: "m" }] });
   }
   return retos;
 }
@@ -423,7 +423,7 @@ const RETO_INFO = {
   r4: { t: "El terreno", ley: "Ley de Cosenos · buscar un ángulo" },
   r5: { t: "¡Cuidado! Dos respuestas", ley: "El caso ambiguo" },
   r6: { t: "La vela del barco", ley: "Triángulo completo" },
-  r7: { t: "Misión final: los dos edificios", ley: "Problema aplicado" },
+  r7: { t: "Misión final: las torres de vigilancia", ley: "Problema aplicado · ALA" },
 };
 
 let S = null; // estado
@@ -522,34 +522,6 @@ function svgAmbig(r, showBoth) {
   s += `<text x="${(A[0] + C1[0]) / 2 + 30}" y="${(A[1] + C1[1]) / 2}" font-family="Cambria,serif" font-style="italic" font-size="18" fill="#2A9D8F">b = ${b} cm</text>`;
   s += `<text x="${B[0] - 8}" y="${B[1] + 22}" font-family="Calibri,sans-serif" font-weight="700" font-size="15" fill="#1B2A41">B</text>`;
   s += `<text x="${A[0] + 6}" y="${A[1] + 22}" font-family="Calibri,sans-serif" font-weight="700" font-size="15" fill="#1B2A41">A</text>`;
-  return s + "</svg>";
-}
-
-function svgBuild(r, solved) {
-  const { D, t1, t2 } = r.d, W = 440, H = 300, P = 40;
-  const h1 = (D / 2) * tanD(t1), h2 = (D / 2) * tanD(t2);
-  const sc = Math.min((W - 2 * P - 40) / D, (H - 2 * P - 30) / Math.max(h1, h2));
-  const gx = (x) => P + 20 + x * sc, gy = (y) => H - P - y * sc;
-  const ax = gx(0), bx = gx(D), ox = gx(D / 2), g = gy(0);
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Dos edificios">`;
-  s += `<line x1="${P - 10}" y1="${g}" x2="${W - P + 10}" y2="${g}" stroke="#1B2A41" stroke-width="3"/>`;
-  s += `<rect x="${ax - 26}" y="${gy(h1)}" width="26" height="${g - gy(h1)}" fill="#C9D3E0" stroke="#34495E"/>`;
-  s += `<rect x="${bx}" y="${gy(h2)}" width="26" height="${g - gy(h2)}" fill="#C9D3E0" stroke="#34495E"/>`;
-  s += `<line x1="${ox}" y1="${g}" x2="${ax}" y2="${gy(h1)}" stroke="#3B82C4" stroke-width="4" stroke-dasharray="${solved ? "0" : "8 6"}"/>`;
-  s += `<line x1="${ox}" y1="${g}" x2="${bx}" y2="${gy(h2)}" stroke="#2A9D8F" stroke-width="4" stroke-dasharray="${solved ? "0" : "8 6"}"/>`;
-  s += `<line x1="${ax}" y1="${gy(h1)}" x2="${bx}" y2="${gy(h2)}" stroke="#E76F51" stroke-width="4" stroke-dasharray="8 6"/>`;
-  s += `<circle cx="${ox}" cy="${g}" r="6" fill="#E76F51"/><text x="${ox}" y="${g + 22}" text-anchor="middle" font-weight="700" font-family="Calibri,sans-serif" font-size="15" fill="#1B2A41">O</text>`;
-  s += `<path d="M${ox},${g} L${ox - 34},${g} A34,34 0 0 1 ${ox - 34 * cosD(t1)},${g - 34 * sinD(t1)} Z" fill="#3B82C4" opacity=".45"/>`;
-  s += `<path d="M${ox},${g} L${ox + 34},${g} A34,34 0 0 0 ${ox + 34 * cosD(t2)},${g - 34 * sinD(t2)} Z" fill="#2A9D8F" opacity=".45"/>`;
-  s += `<text x="${ox - 62}" y="${g - 10}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-weight="700" font-size="16" fill="#3B82C4">${t1}°</text>`;
-  s += `<text x="${ox + 62}" y="${g - 10}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-weight="700" font-size="16" fill="#2A9D8F">${t2}°</text>`;
-  s += `<text x="${(ox + ax) / 2 - 22}" y="${(g + gy(h1)) / 2}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-size="16" fill="#3B82C4">OA</text>`;
-  s += `<text x="${(ox + bx) / 2 + 24}" y="${(g + gy(h2)) / 2 + 10}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-size="16" fill="#2A9D8F">OB</text>`;
-  s += `<text x="${(ax + bx) / 2}" y="${(gy(h1) + gy(h2)) / 2 - 12}" text-anchor="middle" font-family="Cambria,serif" font-style="italic" font-weight="700" font-size="18" fill="#E76F51">d = ?</text>`;
-  s += `<text x="${ax - 13}" y="${gy(h1) - 8}" text-anchor="middle" font-weight="700" font-family="Calibri,sans-serif" font-size="14" fill="#1B2A41">A</text>`;
-  s += `<text x="${bx + 13}" y="${gy(h2) - 8}" text-anchor="middle" font-weight="700" font-family="Calibri,sans-serif" font-size="14" fill="#1B2A41">B</text>`;
-  s += `<text x="${(ax + ox) / 2}" y="${g + 22}" text-anchor="middle" font-family="Cambria,serif" font-size="15" fill="#34495E">${D / 2} m</text>`;
-  s += `<text x="${(bx + ox) / 2}" y="${g + 22}" text-anchor="middle" font-family="Cambria,serif" font-size="15" fill="#34495E">${D / 2} m</text>`;
   return s + "</svg>";
 }
 
@@ -758,7 +730,7 @@ const FORMULAS = {
   r4: { u: ["cos α = (", { s: ["b", "c"], g: 1 }, "² + ", { s: ["b", "c"], g: 1 }, "² − ", { s: ["a"] }, "²) ÷ (2 · ", { s: ["b", "c"], g: 2 }, " · ", { s: ["b", "c"], g: 2 }, ")"] },
   r5: { u: ["sin γ = ", { s: ["c"] }, " · sin ", { s: ["be"] }, " ÷ ", { s: ["b"] }] },
   r6: { u: ["c² = ", { s: ["a", "b"], g: 1 }, "² + ", { s: ["a", "b"], g: 1 }, "² − 2 · ", { s: ["a", "b"], g: 2 }, " · ", { s: ["a", "b"], g: 2 }, " · cos ", { s: ["ga"] }] },
-  r7: { u: ["d² = ", { s: ["OA", "OB"], g: 1 }, "² + ", { s: ["OA", "OB"], g: 1 }, "² − 2 · ", { s: ["OA", "OB"], g: 2 }, " · ", { s: ["OA", "OB"], g: 2 }, " · cos ", { s: ["O"] }] },
+  r7: { u: ["b = ", { s: ["c"] }, " · sin ", { s: ["be"] }, " ÷ sin ", { s: ["ga"] }] },
 };
 
 
@@ -769,7 +741,7 @@ const RELS = {
   r4: ["a² = b² + c² − 2bc · cos α", "b² = a² + c² − 2ac · cos α", "a² = b² + c² − 2bc · sin α"],
   r5: ["b / sin β = c / sin γ", "b / sin γ = c / sin β", "b / sin β = c / sin α"],
   r6: ["c² = a² + b² − 2ab · cos γ", "c² = a² + b² − 2ab · cos α", "c² = a² + b² + 2ab · cos γ"],
-  r7: ["d² = OA² + OB² − 2 · OA · OB · cos ∠O", "d² = OA² + OB²", "d / sin ∠O = OA / sin θ₁"],
+  r7: ["b / sin β = c / sin γ", "b / sin α = c / sin γ", "b² = a² + c² − 2ac · cos β"],
 };
 const REL_WHY = {
   r1: "Cada lado va con su ángulo opuesto: b con β y a con α.",
@@ -778,7 +750,7 @@ const REL_WHY = {
   r4: "El ángulo α que buscas está frente al lado a, que va solo del lado izquierdo.",
   r5: "b va con β y c va con γ.",
   r6: "c va del lado izquierdo y el ángulo es γ, el que está entre a y b.",
-  r7: "En el triángulo O–A–B, d está frente a ∠O. Solo sería Pitágoras si ∠O midiera 90°.",
+  r7: "Con γ ya calculado, la pareja c–γ está completa; b va con β.",
 };
 function colorEq(str) {
   return esc(str)
@@ -827,11 +799,11 @@ function retoTexts(id, r) {
       h2: `c = √(${d.a}² + ${d.b}² − 2(${d.a})(${d.b})·cos ${d.ga}°) ≈ ${f2(r.ans[0].v)};  sin α = ${d.a} · sin ${d.ga}° ÷ c`,
       chips: ["a", "b", "ga"], extra: [{ k: "c", lab: "c = ?" }] };
     case "r7": return {
-      story: `Dos edificios están separados <b>${d.D} m</b>. Desde el punto O, a la mitad entre ellos, se ven sus azoteas con ángulos de elevación de <span class="c-a">${d.t1}°</span> y <span class="c-b">${d.t2}°</span>. ¿Qué distancia <span class="c-c">d</span> hay entre las azoteas?`,
-      law: "cos", lawWhy: "En el triángulo O–A–B conocerás OA, OB y el ángulo entre ellos (∠O): LAL.",
-      h1: `OA = ${d.D / 2} ÷ cos ${d.t1}°,  OB = ${d.D / 2} ÷ cos ${d.t2}°,  ∠O = 180° − ${d.t1}° − ${d.t2}°.`,
-      h2: "d² = OA² + OB² − 2·OA·OB·cos ∠O. Comprueba con Pitágoras usando la diferencia de alturas.",
-      chips: ["OA", "OB", "O"], extra: [{ k: "D", lab: `D = ${d.D} m` }] };
+      story: `Dos torres de vigilancia, A y B, están separadas <span class="c-c">c = ${d.c} m</span>. Desde la torre A se ve un incendio en C con un ángulo <span class="c-a">α = ${d.al}°</span>, y desde la torre B con un ángulo <span class="c-b">β = ${d.be}°</span>. ¿A qué distancia <span class="c-b">b</span> está el incendio de la torre A?`,
+      law: "sen", lawWhy: "Dos ángulos y el lado entre ellos (ALA). Calcula primero γ = 180° − α − β y así tendrás la pareja completa c–γ.",
+      h1: "Primero el tercer ángulo: γ = 180° − α − β. Después usa b / sin β = c / sin γ.",
+      h2: `γ = 180° − ${d.al}° − ${d.be}° = ${180 - d.al - d.be}°;  b = ${d.c} · sin ${d.be}° ÷ sin ${180 - d.al - d.be}°`,
+      chips: ["c", "al", "be"], extra: [{ k: "ga", lab: "γ (la que calculaste)" }, { k: "b", lab: "b = ?" }] };
   }
 }
 function chipLabel(k, r) {
@@ -839,11 +811,10 @@ function chipLabel(k, r) {
   if (k in d && !["D"].includes(k)) return `${SYM[k]} = ${d[k]}${isAng(k) ? "°" : " " + r.u}`;
   return SYM[k];
 }
-function slotFill(k, r) { const d = r.d; if (k in d) return `${d[k]}${isAng(k) ? "°" : ""}`; return SYM[k]; }
+function slotFill(k, r) { const d = r.d; if (k in d) return `${d[k]}${isAng(k) ? "°" : ""}`; if (r.id === "r7" && k === "ga") return "γ"; return SYM[k]; }
 
 function figFor(id, r, st) {
   if (id === "r5") return svgAmbig(r, st.law);
-  if (id === "r7") return svgBuild(r, st.solved);
   const show = st.solved || st.revealed;
   return svgTri(r.tri, { known: show ? [...r.known, ...r.unknown] : r.known, unknown: show ? [] : r.unknown, u: r.u });
 }
