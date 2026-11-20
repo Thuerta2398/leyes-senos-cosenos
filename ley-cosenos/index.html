@@ -130,7 +130,11 @@ h2.st{font-family:var(--serif);font-size:30px;margin:4px 0 6px}
 #calc .keys button.cl{background:var(--red)}
 #calc .use{margin-top:8px;width:100%;background:var(--teal);color:#fff;border:0;border-radius:8px;padding:9px;font-weight:700}
 #calc .hd .min{font-size:22px;line-height:1;padding:0 6px}
-#calcFab{position:fixed;right:18px;bottom:78px;width:56px;height:56px;border-radius:50%;border:0;background:var(--navy);color:#fff;font-size:26px;z-index:49;box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:pop .25s;touch-action:manipulation}
+#calc .hd .tgt{background:var(--teal);color:#fff;border-radius:6px;padding:1px 7px;font-size:12px;margin-left:6px;display:none}
+#calc .hd .tgt.on{display:inline-block}
+input.answer.flash{animation:flashIn .9s}
+@keyframes flashIn{0%{background:#FFE7C2}100%{background:#fff}}
+#calcFab{position:fixed;left:18px;bottom:78px;width:56px;height:56px;border-radius:50%;border:0;background:var(--navy);color:#fff;font-size:26px;z-index:49;box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:pop .25s;touch-action:manipulation}
 #calcFab:hover,#calcFab:focus-visible{background:#2C3E57;outline:3px solid var(--orange);outline-offset:2px}
 #calcFab .dot{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--orange);color:var(--navy);font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center}
 #calcFab.has .dot{display:flex}
@@ -165,7 +169,7 @@ footer.bottom .row{max-width:1040px;margin:0 auto;justify-content:space-between}
   nav.prog .sep{flex-basis:3px}
   main{padding:14px 12px 110px}
   #calc{right:8px;left:8px;width:auto;bottom:70px}
-  #calcFab{right:10px;bottom:72px;width:50px;height:50px;font-size:23px}
+  #calcFab{left:10px;bottom:72px;width:50px;height:50px;font-size:23px}
   #calc .keys{gap:5px} #calc .keys button{padding:7px 0} #calc .scr{min-height:54px} #calc .scr .res{font-size:21px}
   .formula{font-size:17px}
   .slot{min-width:46px;height:34px}
@@ -192,7 +196,7 @@ footer.bottom .row{max-width:1040px;margin:0 auto;justify-content:space-between}
   <button class="btn" id="next">Siguiente →</button>
 </div></footer>
 <div id="calc" role="dialog" aria-label="Calculadora">
-  <div class="hd"><div>Calculadora <span class="deg">DEG</span></div><button class="min" aria-label="Minimizar calculadora" title="Minimizar">–</button></div>
+  <div class="hd"><div>Calculadora <span class="deg">DEG</span><span class="tgt" aria-live="polite"></span></div><button class="min" aria-label="Minimizar calculadora" title="Minimizar">–</button></div>
   <div class="scr"><p class="ex"></p><div class="res">0</div></div>
   <div class="keys"></div>
   <button class="use">Usar resultado en la casilla</button>
@@ -242,6 +246,16 @@ if (typeof module !== "undefined") module.exports = { genAll, fromSides, lalTri 
 /* ===== Calculadora científica (modo grados) ===== */
 const Calc = (() => {
   let expr = "", ans = 0, lastRes = null, lastInput = null, openedAt = 0, lastPtr = "";
+  /* Celular: pantalla táctil y angosta. Ahí NO se abre sola (evita el doble teclado: el del teléfono + la calculadora) */
+  const isPhone = () => window.matchMedia("(pointer: coarse)").matches && Math.min(window.innerWidth, window.innerHeight) < 600;
+  const tgtLabel = (inp) => { const l = inp && document.querySelector(`label[for="${inp.id}"]`); return l ? l.textContent.replace(/\s*=\s*$/, "") : ""; };
+  function setTarget(inp) {
+    lastInput = inp; const t = document.querySelector("#calc .hd .tgt"); if (!t) return;
+    const name = inp && document.body.contains(inp) && !inp.readOnly ? tgtLabel(inp) : "";
+    t.textContent = name ? "→ " + name : ""; t.classList.toggle("on", !!name);
+  }
+  /* Mientras la calculadora está abierta en el celular, las casillas no despliegan el teclado del teléfono */
+  const phoneKeyboard = (on) => document.querySelectorAll("input.answer").forEach((i) => i.setAttribute("inputmode", on ? "decimal" : "none"));
   const FN = { "sin(": (x) => sinD(x), "cos(": (x) => cosD(x), "tan(": (x) => tanD(x), "sin⁻¹(": (x) => asinD(x), "cos⁻¹(": (x) => acosD(x), "tan⁻¹(": (x) => Math.atan(x) * R2D, "√(": (x) => Math.sqrt(x) };
   const FN_KEYS = Object.keys(FN).sort((a, b) => b.length - a.length);
   function tokenize(s) {
@@ -298,13 +312,24 @@ const Calc = (() => {
     el.querySelector(".use").onclick = () => {
       if (lastRes === null || lastRes === "Error") return;
       const target = lastInput && document.body.contains(lastInput) ? lastInput : null;
-      if (target) { const dec = +(target.dataset.dec || 2); target.value = parseFloat(lastRes).toFixed(dec); target.dispatchEvent(new Event("input")); target.focus(); minimize(); }
-      else App.toast("Primero toca la casilla de respuesta", true);
+      if (target && !target.readOnly) {
+        const dec = +(target.dataset.dec || 2); target.value = parseFloat(lastRes).toFixed(dec); target.dispatchEvent(new Event("input"));
+        target.classList.remove("flash"); void target.offsetWidth; target.classList.add("flash");
+        if (!isPhone()) target.focus(); /* en el celular no se enfoca para no abrir el teclado del teléfono */
+        minimize();
+      } else App.toast("Primero toca la casilla de respuesta", true);
     };
     el.querySelector(".hd .min").onclick = minimize;
     /* En pantallas táctiles, el mismo toque que abre la calculadora no debe pulsar una tecla que quedó debajo del dedo */
     el.addEventListener("click", (e) => { if (performance.now() - openedAt < 450) { e.stopPropagation(); e.preventDefault(); } }, true);
-    document.getElementById("calcFab").onclick = open;
+    const fab = document.getElementById("calcFab");
+    try { const pos = JSON.parse(localStorage.getItem("lc5_fab_pos")); if (pos) placeFab(pos.x, pos.y); } catch (e) {}
+    let fx, fy, fox, foy, fdrag = false, fmoved = false;
+    fab.addEventListener("pointerdown", (e) => { fdrag = true; fmoved = false; fx = e.clientX; fy = e.clientY; const r = fab.getBoundingClientRect(); fox = r.left; foy = r.top; fab.setPointerCapture(e.pointerId); });
+    fab.addEventListener("pointermove", (e) => { if (!fdrag) return; if (Math.abs(e.clientX - fx) + Math.abs(e.clientY - fy) > 8) fmoved = true; if (fmoved) placeFab(fox + e.clientX - fx, foy + e.clientY - fy); });
+    fab.addEventListener("pointerup", () => { fdrag = false; if (fmoved) { const r = fab.getBoundingClientRect(); try { localStorage.setItem("lc5_fab_pos", JSON.stringify({ x: r.left, y: r.top })); } catch (e) {} } });
+    fab.addEventListener("click", (e) => { if (fmoved) { e.preventDefault(); fmoved = false; return; } open(lastInput && document.body.contains(lastInput) ? lastInput : null); });
+    window.addEventListener("resize", () => { const r = fab.getBoundingClientRect(); if (fab.style.left) placeFab(r.left, r.top); });
     const hd = el.querySelector(".hd"); let sx, sy, ox, oy, drag = false;
     hd.addEventListener("pointerdown", (e) => { if (e.target.tagName === "BUTTON") return; drag = true; sx = e.clientX; sy = e.clientY; const r = el.getBoundingClientRect(); ox = r.left; oy = r.top; hd.setPointerCapture(e.pointerId); });
     hd.addEventListener("pointermove", (e) => { if (!drag) return; el.style.left = Math.max(0, ox + e.clientX - sx) + "px"; el.style.top = Math.max(0, oy + e.clientY - sy) + "px"; el.style.right = "auto"; el.style.bottom = "auto"; });
@@ -313,13 +338,17 @@ const Calc = (() => {
     const KEEP = "#calc, #calcFab, #calcBtn, #openCalc, input.answer";
     document.addEventListener("focusin", (e) => {
       const t = e.target;
-      if (t.matches && t.matches("input.answer")) { lastInput = t; if (!t.readOnly) open(t); }
+      if (t.matches && t.matches("input.answer")) { setTarget(t); if (!t.readOnly && !isPhone()) open(t); }
       else if (!(t.closest && t.closest(KEEP)) && isOpen()) minimize();
     });
     document.addEventListener("pointerdown", (e) => { lastPtr = e.pointerType; }, true);
     document.addEventListener("pointerdown", (e) => {
       const t = e.target;
-      if (t.matches && t.matches("input.answer")) { if (!t.readOnly && !isOpen()) { lastInput = t; open(t); } }
+      if (t.matches && t.matches("input.answer")) {
+        if (t.readOnly) return;
+        if (isPhone()) { if (isOpen()) { t.setAttribute("inputmode", "none"); setTarget(t); } }
+        else if (!isOpen()) { setTarget(t); open(t); }
+      }
       else if (isOpen() && !(t.closest && t.closest(KEEP))) minimize();
     });
     document.addEventListener("keydown", (e) => { lastPtr = ""; if (e.key === "Escape" && isOpen()) minimize(); });
@@ -333,6 +362,9 @@ const Calc = (() => {
   function open(input) {
     const el = document.getElementById("calc"), fab = document.getElementById("calcFab");
     if (!isOpen() && lastPtr === "touch") openedAt = performance.now();
+    if (!input) { const first = document.querySelector("input.answer:not([readonly])"); if (first && (!lastInput || !document.body.contains(lastInput))) input = first; }
+    if (input) setTarget(input);
+    if (isPhone()) { phoneKeyboard(false); if (document.activeElement && document.activeElement.matches("input")) document.activeElement.blur(); }
     el.classList.add("open"); fab.hidden = true; document.body.classList.add("calc-open");
     /* Que la casilla no quede tapada por la calculadora */
     if (input && input.getBoundingClientRect) requestAnimationFrame(() => {
@@ -344,10 +376,16 @@ const Calc = (() => {
   }
   function minimize() {
     const el = document.getElementById("calc"), fab = document.getElementById("calcFab");
-    el.classList.remove("open"); fab.hidden = false; document.body.classList.remove("calc-open");
+    el.classList.remove("open"); fab.hidden = false; document.body.classList.remove("calc-open"); phoneKeyboard(true);
     fab.classList.toggle("has", lastRes !== null && lastRes !== "Error");
   }
-  return { init, toggle: () => (isOpen() ? minimize() : open()), open: () => open(), minimize, _justEq: false };
+  function placeFab(x, y) {
+    const fab = document.getElementById("calcFab"), w = fab.offsetWidth || 56, h = fab.offsetHeight || 56;
+    fab.style.left = Math.max(4, Math.min(window.innerWidth - w - 4, x)) + "px";
+    fab.style.top = Math.max(4, Math.min(window.innerHeight - h - 4, y)) + "px";
+    fab.style.right = "auto"; fab.style.bottom = "auto";
+  }
+  return { init, toggle: () => (isOpen() ? minimize() : open()), open: () => open(lastInput && document.body.contains(lastInput) ? lastInput : null), minimize, _justEq: false };
 })();
 
 /* ===== Interactivo: Ley de Cosenos ===== */
