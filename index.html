@@ -112,7 +112,19 @@ h2.st{font-family:var(--serif);font-size:30px;margin:4px 0 6px}
 #calc .keys button.op{background:#4A6587}
 #calc .keys button.eq{background:var(--orange);color:var(--navy)}
 #calc .keys button.cl{background:var(--red)}
-#calc .use{margin-top:8px;width:100%;background:var(--teal);color:#fff;border:0;border-radius:8px;padding:9px;font-weight:700}
+#calc .keys button.use{background:var(--teal)}
+#calc .use{margin:0;width:100%;font-size:14px;line-height:1.15;background:var(--teal);color:#fff;border:0;border-radius:8px;padding:9px;font-weight:700}
+#calc .hd .min{font-size:22px;line-height:1;padding:0 6px}
+#calc .hd .tgt{background:var(--teal);color:#fff;border-radius:6px;padding:1px 7px;font-size:12px;margin-left:6px;display:none}
+#calc .hd .tgt.on{display:inline-block}
+input.answer.flash{animation:flashIn .9s}
+@keyframes flashIn{0%{background:#FFE7C2}100%{background:#fff}}
+#calcFab{position:fixed;left:18px;bottom:78px;width:56px;height:56px;border-radius:50%;border:0;background:var(--navy);color:#fff;font-size:26px;z-index:49;box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:pop .25s;touch-action:manipulation}
+#calcFab:hover,#calcFab:focus-visible{background:#2C3E57;outline:3px solid var(--orange);outline-offset:2px}
+#calcFab .dot{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--orange);color:var(--navy);font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center}
+#calcFab.has .dot{display:flex}
+#calcFab[hidden]{display:none}
+body.calc-open main{padding-bottom:440px}
 /* registro / comprobante */
 .form{max-width:520px}
 .form label{display:block;font-weight:700;margin:12px 0 4px}
@@ -129,7 +141,7 @@ h2.st{font-family:var(--serif);font-size:30px;margin:4px 0 6px}
 footer.bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 18px;z-index:15}
 footer.bottom .row{max-width:1040px;margin:0 auto;justify-content:space-between}
 @media print{
-  header.top,footer.bottom,#calc,.noprint,nav{display:none!important}
+  header.top,footer.bottom,#calc,#calcFab,.noprint,nav{display:none!important}
   main{padding:0}
   #cert{border:2px solid #000}
   body{font-size:13px}
@@ -146,11 +158,17 @@ footer.bottom .row{max-width:1040px;margin:0 auto;justify-content:space-between}
   nav.prog .sep{flex-basis:3px}
   main{padding:14px 12px 110px}
   #calc{right:8px;left:8px;width:auto;bottom:70px}
+  #calcFab{left:10px;bottom:72px;width:50px;height:50px;font-size:23px}
+  #calc{padding:8px} #calc .hd{padding:0 4px 6px} #calc .keys{gap:5px;margin-top:6px} #calc .keys button{padding:8px 0} #calc .scr{min-height:48px;padding:6px 10px} #calc .scr .ex{font-size:13px;min-height:16px} #calc .scr .res{font-size:20px}
   .formula{font-size:17px}
   .slot{min-width:46px;height:34px}
   footer.bottom .btn{padding:8px 12px}
   #where{font-size:12px!important}
 }
+/* Celulares: un deslizamiento vertical sobre fichas y tarjetas desplaza la página; tocar sigue seleccionando */
+@media (pointer:coarse) and (max-width:600px),(pointer:coarse) and (max-height:500px){.chip,.tcard{touch-action:pan-y}}
+footer.bottom .row{flex-wrap:nowrap}
+#where{flex:1;min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -169,11 +187,12 @@ footer.bottom .row{max-width:1040px;margin:0 auto;justify-content:space-between}
   <button class="btn" id="next">Siguiente →</button>
 </div></footer>
 <div id="calc" role="dialog" aria-label="Calculadora">
-  <div class="hd"><div>Calculadora <span class="deg">DEG</span></div><button aria-label="Cerrar">×</button></div>
+  <div class="hd"><div>Calculadora <span class="deg">DEG</span><span class="tgt" aria-live="polite"></span></div><button class="min" aria-label="Minimizar calculadora" title="Minimizar">–</button></div>
   <div class="scr"><p class="ex"></p><div class="res">0</div></div>
   <div class="keys"></div>
-  <button class="use">Usar resultado en la casilla</button>
+  <button class="use">Usar resultado ↵</button>
 </div>
+<button id="calcFab" aria-label="Abrir calculadora" title="Calculadora">🧮<span class="dot" aria-hidden="true">✓</span></button>
 <script>/* ===== Generador de variantes (determinista por alumno) ===== */
 const D2R = Math.PI / 180, R2D = 180 / Math.PI;
 const sinD = (d) => Math.sin(d * D2R), cosD = (d) => Math.cos(d * D2R), tanD = (d) => Math.tan(d * D2R);
@@ -287,7 +306,17 @@ if (typeof module !== "undefined") module.exports = { genRetos, sinD, cosD, tanD
 
 /* ===== Calculadora científica (modo grados) ===== */
 const Calc = (() => {
-  let expr = "", ans = 0, lastRes = null, lastInput = null;
+  let expr = "", ans = 0, lastRes = null, lastInput = null, openedAt = 0, lastPtr = "";
+  /* Celular: pantalla táctil y angosta. Ahí NO se abre sola (evita el doble teclado: el del teléfono + la calculadora) */
+  const isPhone = () => window.matchMedia("(pointer: coarse)").matches && Math.min(window.innerWidth, window.innerHeight) < 600;
+  const tgtLabel = (inp) => { const l = inp && document.querySelector(`label[for="${inp.id}"]`); return l ? l.textContent.replace(/\s*=\s*$/, "") : ""; };
+  function setTarget(inp) {
+    lastInput = inp; const t = document.querySelector("#calc .hd .tgt"); if (!t) return;
+    const name = inp && document.body.contains(inp) && !inp.readOnly ? tgtLabel(inp) : "";
+    t.textContent = name ? "→ " + name : ""; t.classList.toggle("on", !!name);
+  }
+  /* Mientras la calculadora está abierta en el celular, las casillas no despliegan el teclado del teléfono */
+  const phoneKeyboard = (on) => document.querySelectorAll("input.answer").forEach((i) => i.setAttribute("inputmode", on ? "decimal" : "none"));
   const FN = { "sin(": (x) => sinD(x), "cos(": (x) => cosD(x), "tan(": (x) => tanD(x),
     "sin⁻¹(": (x) => asinD(x), "cos⁻¹(": (x) => acosD(x), "tan⁻¹(": (x) => Math.atan(x) * R2D, "√(": (x) => Math.sqrt(x) };
   const FN_KEYS = Object.keys(FN).sort((a, b) => b.length - a.length);
@@ -379,23 +408,86 @@ const Calc = (() => {
       b.onclick = () => press(k);
       keys.appendChild(b);
     });
-    const eq = document.createElement("button"); eq.textContent = "="; eq.className = "eq"; eq.style.gridColumn = "span 5"; eq.onclick = () => press("="); keys.appendChild(eq);
+    const eq = document.createElement("button"); eq.textContent = "="; eq.className = "eq"; eq.style.gridColumn = "span 2"; eq.onclick = () => press("="); keys.appendChild(eq);
+    const use = el.querySelector(".use"); use.style.gridColumn = "span 3"; keys.appendChild(use); /* "=" y "Usar resultado" en un solo renglón */
     el.querySelector(".use").onclick = () => {
       if (lastRes === null || lastRes === "Error") return;
       const target = lastInput && document.body.contains(lastInput) ? lastInput : null;
-      if (target) { target.value = (Math.round(parseFloat(lastRes) * 100) / 100).toFixed(2); target.dispatchEvent(new Event("input")); target.focus(); }
-      else App.toast("Primero toca la casilla de respuesta", true);
+      if (target && !target.readOnly) {
+        const dec = +(target.dataset.dec || 2); target.value = parseFloat(lastRes).toFixed(dec); target.dispatchEvent(new Event("input"));
+        target.classList.remove("flash"); void target.offsetWidth; target.classList.add("flash");
+        if (!isPhone()) target.focus(); /* en el celular no se enfoca para no abrir el teclado del teléfono */
+        minimize();
+      } else App.toast("Primero toca la casilla de respuesta", true);
     };
-    el.querySelector(".hd button").onclick = () => el.classList.remove("open");
-    // arrastrar calculadora
+    el.querySelector(".hd .min").onclick = minimize;
+    /* En pantallas táctiles, el mismo toque que abre la calculadora no debe pulsar una tecla que quedó debajo del dedo */
+    el.addEventListener("click", (e) => { if (performance.now() - openedAt < 450) { e.stopPropagation(); e.preventDefault(); } }, true);
+    const fab = document.getElementById("calcFab");
+    try { const pos = JSON.parse(localStorage.getItem("lc5_fab_pos")); if (pos) placeFab(pos.x, pos.y); } catch (e) {}
+    let fx, fy, fox, foy, fdrag = false, fmoved = false;
+    fab.addEventListener("pointerdown", (e) => { fdrag = true; fmoved = false; fx = e.clientX; fy = e.clientY; const r = fab.getBoundingClientRect(); fox = r.left; foy = r.top; fab.setPointerCapture(e.pointerId); });
+    fab.addEventListener("pointermove", (e) => { if (!fdrag) return; if (Math.abs(e.clientX - fx) + Math.abs(e.clientY - fy) > 8) fmoved = true; if (fmoved) placeFab(fox + e.clientX - fx, foy + e.clientY - fy); });
+    fab.addEventListener("pointerup", () => { fdrag = false; if (fmoved) { const r = fab.getBoundingClientRect(); try { localStorage.setItem("lc5_fab_pos", JSON.stringify({ x: r.left, y: r.top })); } catch (e) {} } });
+    fab.addEventListener("click", (e) => { if (fmoved) { e.preventDefault(); fmoved = false; return; } open(lastInput && document.body.contains(lastInput) ? lastInput : null); });
+    window.addEventListener("resize", () => { const r = fab.getBoundingClientRect(); if (fab.style.left) placeFab(r.left, r.top); });
     const hd = el.querySelector(".hd"); let sx, sy, ox, oy, drag = false;
     hd.addEventListener("pointerdown", (e) => { if (e.target.tagName === "BUTTON") return; drag = true; sx = e.clientX; sy = e.clientY; const r = el.getBoundingClientRect(); ox = r.left; oy = r.top; hd.setPointerCapture(e.pointerId); });
     hd.addEventListener("pointermove", (e) => { if (!drag) return; el.style.left = Math.max(0, ox + e.clientX - sx) + "px"; el.style.top = Math.max(0, oy + e.clientY - sy) + "px"; el.style.right = "auto"; el.style.bottom = "auto"; });
     hd.addEventListener("pointerup", () => (drag = false));
-    document.addEventListener("focusin", (e) => { if (e.target.matches("input.answer")) lastInput = e.target; });
+    /* Apertura automática al tocar una casilla de respuesta numérica; minimización cuando deja de hacer falta */
+    const KEEP = "#calc, #calcFab, #calcBtn, #openCalc, input.answer";
+    document.addEventListener("focusin", (e) => {
+      const t = e.target;
+      if (t.matches && t.matches("input.answer")) { setTarget(t); if (!t.readOnly && !isPhone()) open(t); }
+      else if (!(t.closest && t.closest(KEEP)) && isOpen()) minimize();
+    });
+    document.addEventListener("pointerdown", (e) => { lastPtr = e.pointerType; }, true);
+    document.addEventListener("pointerdown", (e) => {
+      const t = e.target;
+      if (t.matches && t.matches("input.answer")) {
+        if (t.readOnly) return;
+        if (isPhone()) { if (isOpen()) { t.setAttribute("inputmode", "none"); setTarget(t); } }
+        else if (!isOpen()) { setTarget(t); open(t); }
+      }
+      else if (isOpen() && !(t.closest && t.closest(KEEP))) minimize();
+    });
+    document.addEventListener("keydown", (e) => { lastPtr = ""; if (e.key === "Escape" && isOpen()) minimize(); });
+    /* Si la casilla activa desaparece (cambio de estación o reto resuelto), se minimiza */
+    new MutationObserver(() => { if (!isOpen()) document.getElementById("calcFab").hidden = !hasAnswers(); if (isOpen() && lastInput && (!document.body.contains(lastInput) || lastInput.readOnly) && !document.getElementById("calc").contains(document.activeElement)) minimize(); })
+      .observe(document.getElementById("main"), { childList: true, subtree: true });
+    minimize();
     render();
   }
-  return { init, evaluate, press, toggle: () => document.getElementById("calc").classList.toggle("open"), _justEq: false };
+  const isOpen = () => document.getElementById("calc").classList.contains("open");
+  const hasAnswers = () => !!document.querySelector("#main input.answer:not([readonly])");
+  function open(input) {
+    const el = document.getElementById("calc"), fab = document.getElementById("calcFab");
+    if (!isOpen() && lastPtr === "touch") openedAt = performance.now();
+    if (!input) { const first = document.querySelector("input.answer:not([readonly])"); if (first && (!lastInput || !document.body.contains(lastInput))) input = first; }
+    if (input) setTarget(input);
+    if (isPhone()) { phoneKeyboard(false); if (document.activeElement && document.activeElement.matches("input")) document.activeElement.blur(); }
+    el.classList.add("open"); fab.hidden = true; document.body.classList.add("calc-open");
+    /* Que la casilla no quede tapada por la calculadora */
+    if (input && input.getBoundingClientRect) requestAnimationFrame(() => {
+      /* offsetTop/offsetLeft no se ven afectados por la animación de entrada */
+      const r = input.getBoundingClientRect(), cTop = el.offsetTop, cLeft = el.offsetLeft, cRight = cLeft + el.offsetWidth;
+      const overlapX = r.right > cLeft && r.left < cRight;
+      if (overlapX && r.bottom > cTop - 12 && r.top < cTop + el.offsetHeight) window.scrollBy({ top: r.bottom - cTop + 20, behavior: "smooth" });
+    });
+  }
+  function minimize() {
+    const el = document.getElementById("calc"), fab = document.getElementById("calcFab");
+    el.classList.remove("open"); fab.hidden = !hasAnswers(); document.body.classList.remove("calc-open"); phoneKeyboard(true);
+    fab.classList.toggle("has", lastRes !== null && lastRes !== "Error");
+  }
+  function placeFab(x, y) {
+    const fab = document.getElementById("calcFab"), w = fab.offsetWidth || 56, h = fab.offsetHeight || 56;
+    fab.style.left = Math.max(4, Math.min(window.innerWidth - w - 4, x)) + "px";
+    fab.style.top = Math.max(4, Math.min(window.innerHeight - h - 4, y)) + "px";
+    fab.style.right = "auto"; fab.style.bottom = "auto";
+  }
+  return { init, evaluate, press, toggle: () => (isOpen() ? minimize() : open()), open: () => open(lastInput && document.body.contains(lastInput) ? lastInput : null), minimize, _justEq: false };
 })();
 
 /* ===== Interactivo: Leyes de Senos y Cosenos ===== */
@@ -529,29 +621,42 @@ function svgAmbig(r, showBoth) {
 let selected = null; // {el, key}
 function makeDraggable(el, getPayload, targetSel, onDrop) {
   el.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
+    if (e.pointerType === "mouse") e.preventDefault();
     const payload = getPayload();
     const ghost = el.cloneNode(true); ghost.classList.add("drag-ghost"); ghost.classList.remove("sel");
     let moved = false; const sx = e.clientX, sy = e.clientY; let over = null;
+    let scrollV = 0, raf = 0;
+    const autoScroll = () => { if (!scrollV) { raf = 0; return; } window.scrollBy(0, scrollV); raf = requestAnimationFrame(autoScroll); };
     const move = (ev) => {
       if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6) { moved = true; document.body.appendChild(ghost); }
       if (!moved) return;
       ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px";
+      /* Desplaza la página si se arrastra cerca del borde superior o inferior (las cajas pueden estar fuera de la vista) */
+      const edge = 90, topLim = 110, botLim = window.innerHeight - 80;
+      scrollV = ev.clientY < topLim + edge ? -Math.ceil((topLim + edge - ev.clientY) / 8) : ev.clientY > botLim - edge ? Math.ceil((ev.clientY - botLim + edge) / 8) : 0;
+      if (scrollV && !raf) raf = requestAnimationFrame(autoScroll);
       const t = document.elementFromPoint(ev.clientX, ev.clientY); const tgt = t && t.closest(targetSel);
       if (over && over !== tgt) over.classList.remove("hover");
       over = tgt; if (over) over.classList.add("hover");
     };
     const up = (ev) => {
-      document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up);
-      ghost.remove(); if (over) over.classList.remove("hover");
+      document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", cancel);
+      scrollV = 0; ghost.remove(); if (over) over.classList.remove("hover");
       if (moved) { if (over) onDrop(payload, over); }
       else { // modo toque: seleccionar
         document.querySelectorAll(".sel").forEach((x) => x.classList.remove("sel"));
         if (selected && selected.el === el) { selected = null; document.querySelectorAll(".sel-target").forEach((x) => x.classList.remove("sel-target")); }
-        else { selected = { el, payload, onDrop }; el.classList.add("sel"); document.querySelectorAll(targetSel).forEach((x) => x.classList.add("sel-target")); }
+        else {
+          selected = { el, payload, onDrop }; el.classList.add("sel"); document.querySelectorAll(targetSel).forEach((x) => x.classList.add("sel-target"));
+          /* En celular: si las casillas de destino no se ven, se acercan a la vista */
+          const tg = [...document.querySelectorAll(targetSel)], vis = tg.some((x) => { const r = x.getBoundingClientRect(); return r.bottom > 110 && r.top < window.innerHeight - 80; });
+          if (tg.length && !vis) tg[0].scrollIntoView({ block: "center", behavior: "smooth" });
+        }
       }
     };
-    document.addEventListener("pointermove", move); document.addEventListener("pointerup", up);
+    /* Si el navegador toma el gesto para desplazar la página (celular), se cancela sin soltar nada */
+    const cancel = () => { document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", cancel); scrollV = 0; ghost.remove(); if (over) over.classList.remove("hover"); };
+    document.addEventListener("pointermove", move); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", cancel);
   });
 }
 function bindTapTargets(targetSel) {
@@ -935,7 +1040,7 @@ function renderReto(id) {
   if (hb) hb.onclick = () => { if (st.hints < 2) { st.hints++; save(); render(); } };
   const rv = document.getElementById("reveal");
   if (rv) rv.onclick = () => { st.revealed = true; st.solved = true; r.ans.forEach((a) => (st.vals[a.k] = f2(a.v))); save(); render(); };
-  const oc = document.getElementById("openCalc"); if (oc) oc.onclick = () => { document.getElementById("calc").classList.add("open"); };
+  const oc = document.getElementById("openCalc"); if (oc) oc.onclick = Calc.open;
   const nr = document.getElementById("nextReto"); if (nr) nr.onclick = () => go(S.st + 1);
 }
 

@@ -128,7 +128,8 @@ h2.st{font-family:var(--serif);font-size:30px;margin:4px 0 6px}
 #calc .keys button.op{background:#4A6587}
 #calc .keys button.eq{background:var(--orange);color:var(--navy)}
 #calc .keys button.cl{background:var(--red)}
-#calc .use{margin-top:8px;width:100%;background:var(--teal);color:#fff;border:0;border-radius:8px;padding:9px;font-weight:700}
+#calc .keys button.use{background:var(--teal)}
+#calc .use{margin:0;width:100%;font-size:14px;line-height:1.15;background:var(--teal);color:#fff;border:0;border-radius:8px;padding:9px;font-weight:700}
 #calc .hd .min{font-size:22px;line-height:1;padding:0 6px}
 #calc .hd .tgt{background:var(--teal);color:#fff;border-radius:6px;padding:1px 7px;font-size:12px;margin-left:6px;display:none}
 #calc .hd .tgt.on{display:inline-block}
@@ -170,13 +171,17 @@ footer.bottom .row{max-width:1040px;margin:0 auto;justify-content:space-between}
   main{padding:14px 12px 110px}
   #calc{right:8px;left:8px;width:auto;bottom:70px}
   #calcFab{left:10px;bottom:72px;width:50px;height:50px;font-size:23px}
-  #calc .keys{gap:5px} #calc .keys button{padding:7px 0} #calc .scr{min-height:54px} #calc .scr .res{font-size:21px}
+  #calc{padding:8px} #calc .hd{padding:0 4px 6px} #calc .keys{gap:5px;margin-top:6px} #calc .keys button{padding:8px 0} #calc .scr{min-height:48px;padding:6px 10px} #calc .scr .ex{font-size:13px;min-height:16px} #calc .scr .res{font-size:20px}
   .formula{font-size:17px}
   .slot{min-width:46px;height:34px}
   .eqbig{font-size:18px}
   footer.bottom .btn{padding:8px 12px}
   #where{font-size:12px!important}
 }
+/* Celulares: un deslizamiento vertical sobre fichas y tarjetas desplaza la página; tocar sigue seleccionando */
+@media (pointer:coarse) and (max-width:600px),(pointer:coarse) and (max-height:500px){.chip,.tcard{touch-action:pan-y}}
+footer.bottom .row{flex-wrap:nowrap}
+#where{flex:1;min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -199,7 +204,7 @@ footer.bottom .row{max-width:1040px;margin:0 auto;justify-content:space-between}
   <div class="hd"><div>Calculadora <span class="deg">DEG</span><span class="tgt" aria-live="polite"></span></div><button class="min" aria-label="Minimizar calculadora" title="Minimizar">–</button></div>
   <div class="scr"><p class="ex"></p><div class="res">0</div></div>
   <div class="keys"></div>
-  <button class="use">Usar resultado en la casilla</button>
+  <button class="use">Usar resultado ↵</button>
 </div>
 <button id="calcFab" aria-label="Abrir calculadora" title="Calculadora">🧮<span class="dot" aria-hidden="true">✓</span></button>
 <script>
@@ -308,7 +313,8 @@ const Calc = (() => {
       b.className = /[a-z√]/.test(k) || k === "Ans" || k === "π" ? "fn" : "÷×−+^²()".includes(k) ? "op" : k === "C" || k === "⌫" ? "cl" : "";
       b.setAttribute("aria-label", k); b.onclick = () => press(k); keys.appendChild(b);
     });
-    const eq = document.createElement("button"); eq.textContent = "="; eq.className = "eq"; eq.style.gridColumn = "span 5"; eq.onclick = () => press("="); keys.appendChild(eq);
+    const eq = document.createElement("button"); eq.textContent = "="; eq.className = "eq"; eq.style.gridColumn = "span 2"; eq.onclick = () => press("="); keys.appendChild(eq);
+    const use = el.querySelector(".use"); use.style.gridColumn = "span 3"; keys.appendChild(use); /* "=" y "Usar resultado" en un solo renglón */
     el.querySelector(".use").onclick = () => {
       if (lastRes === null || lastRes === "Error") return;
       const target = lastInput && document.body.contains(lastInput) ? lastInput : null;
@@ -353,12 +359,13 @@ const Calc = (() => {
     });
     document.addEventListener("keydown", (e) => { lastPtr = ""; if (e.key === "Escape" && isOpen()) minimize(); });
     /* Si la casilla activa desaparece (cambio de estación o reto resuelto), se minimiza */
-    new MutationObserver(() => { if (isOpen() && lastInput && (!document.body.contains(lastInput) || lastInput.readOnly) && !document.getElementById("calc").contains(document.activeElement)) minimize(); })
+    new MutationObserver(() => { if (!isOpen()) document.getElementById("calcFab").hidden = !hasAnswers(); if (isOpen() && lastInput && (!document.body.contains(lastInput) || lastInput.readOnly) && !document.getElementById("calc").contains(document.activeElement)) minimize(); })
       .observe(document.getElementById("main"), { childList: true, subtree: true });
     minimize();
     render();
   }
   const isOpen = () => document.getElementById("calc").classList.contains("open");
+  const hasAnswers = () => !!document.querySelector("#main input.answer:not([readonly])");
   function open(input) {
     const el = document.getElementById("calc"), fab = document.getElementById("calcFab");
     if (!isOpen() && lastPtr === "touch") openedAt = performance.now();
@@ -376,7 +383,7 @@ const Calc = (() => {
   }
   function minimize() {
     const el = document.getElementById("calc"), fab = document.getElementById("calcFab");
-    el.classList.remove("open"); fab.hidden = false; document.body.classList.remove("calc-open"); phoneKeyboard(true);
+    el.classList.remove("open"); fab.hidden = !hasAnswers(); document.body.classList.remove("calc-open"); phoneKeyboard(true);
     fab.classList.toggle("has", lastRes !== null && lastRes !== "Error");
   }
   function placeFab(x, y) {
@@ -470,29 +477,42 @@ function svgTri(t, opt) {
 let selected = null;
 function makeDraggable(el, getPayload, targetSel, onDrop) {
   el.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
+    if (e.pointerType === "mouse") e.preventDefault();
     const payload = getPayload();
     const ghost = el.cloneNode(true); ghost.classList.add("drag-ghost"); ghost.classList.remove("sel");
     let moved = false; const sx = e.clientX, sy = e.clientY; let over = null;
+    let scrollV = 0, raf = 0;
+    const autoScroll = () => { if (!scrollV) { raf = 0; return; } window.scrollBy(0, scrollV); raf = requestAnimationFrame(autoScroll); };
     const move = (ev) => {
       if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6) { moved = true; document.body.appendChild(ghost); }
       if (!moved) return;
       ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px";
+      /* Desplaza la página si se arrastra cerca del borde superior o inferior (las cajas pueden estar fuera de la vista) */
+      const edge = 90, topLim = 110, botLim = window.innerHeight - 80;
+      scrollV = ev.clientY < topLim + edge ? -Math.ceil((topLim + edge - ev.clientY) / 8) : ev.clientY > botLim - edge ? Math.ceil((ev.clientY - botLim + edge) / 8) : 0;
+      if (scrollV && !raf) raf = requestAnimationFrame(autoScroll);
       const t = document.elementFromPoint(ev.clientX, ev.clientY); const tgt = t && t.closest(targetSel);
       if (over && over !== tgt) over.classList.remove("hover");
       over = tgt; if (over) over.classList.add("hover");
     };
     const up = () => {
-      document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up);
-      ghost.remove(); if (over) over.classList.remove("hover");
+      document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", cancel);
+      scrollV = 0; ghost.remove(); if (over) over.classList.remove("hover");
       if (moved) { if (over) onDrop(payload, over); }
       else {
         document.querySelectorAll(".sel").forEach((x) => x.classList.remove("sel"));
         if (selected && selected.el === el) { selected = null; document.querySelectorAll(".sel-target").forEach((x) => x.classList.remove("sel-target")); }
-        else { selected = { el, payload, onDrop }; el.classList.add("sel"); document.querySelectorAll(targetSel).forEach((x) => x.classList.add("sel-target")); }
+        else {
+          selected = { el, payload, onDrop }; el.classList.add("sel"); document.querySelectorAll(targetSel).forEach((x) => x.classList.add("sel-target"));
+          /* En celular: si las casillas de destino no se ven, se acercan a la vista */
+          const tg = [...document.querySelectorAll(targetSel)], vis = tg.some((x) => { const r = x.getBoundingClientRect(); return r.bottom > 110 && r.top < window.innerHeight - 80; });
+          if (tg.length && !vis) tg[0].scrollIntoView({ block: "center", behavior: "smooth" });
+        }
       }
     };
-    document.addEventListener("pointermove", move); document.addEventListener("pointerup", up);
+    /* Si el navegador toma el gesto para desplazar la página (celular), se cancela sin soltar nada */
+    const cancel = () => { document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", cancel); scrollV = 0; ghost.remove(); if (over) over.classList.remove("hover"); };
+    document.addEventListener("pointermove", move); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", cancel);
   });
 }
 function bindTapTargets(targetSel) {
